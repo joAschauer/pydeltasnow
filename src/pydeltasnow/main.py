@@ -30,7 +30,7 @@ from .utils import (
     get_zeropadded_gap_idxs,
     )
     
-#from pydeltasnow import __version__
+from pydeltasnow import __version__
 
 __author__ = "Johannes Aschauer"
 __copyright__ = "Johannes Aschauer"
@@ -237,7 +237,6 @@ def swe_delta_snow(
                                          data.index.name: 'date'},
                                 errors='ignore')
                         )
-        raise ValueError("swe.deltasnow: data must pd.DataFrame")
     
     if any([c not in data.columns for c in ['date', 'hs']]):
         raise ValueError(("swe.deltasnow: data must be a pd.Series with pd.DatetimeIndex or a pd.Dataframe" 
@@ -246,8 +245,6 @@ def swe_delta_snow(
     data['date'] = pd.to_datetime(data['date'])
     data = data.sort_values(by='date')
     Hobs = data['hs'].mul(UNIT_FACTOR[hs_input_unit]).to_numpy()
-    
-    start_idxs, stop_idxs = get_nonzero_chunk_idxs(Hobs)
     
     if ignore_zeropadded_gaps:
         zeropadded_gap_idxs = get_zeropadded_gap_idxs(Hobs)
@@ -270,11 +267,17 @@ def swe_delta_snow(
     elif (any(np.isnan(Hobs)) 
             and ignore_zeropadded_gaps
             and not interpolate_small_gaps):
-        raise ValueError("swe.deltasnow: your data contains NaNs surrounded by non-zeros.")
+        raise ValueError(("swe.deltasnow: your data contains NaNs surrounded "
+                          "by non-zeros."))
     elif (any(np.isnan(Hobs)) 
             and ignore_zeropadded_gaps
             and interpolate_small_gaps):
-        raise ValueError(f"swe.deltasnow: your data contains gaps at the end or beginning of your \nseries or longer than {max_gap_length}") 
+        raise ValueError(("swe.deltasnow: your data contains gaps at the end "
+                          "or beginning of your \nseries or gaps longer than "
+                          f"{max_gap_length} timesteps"))
+    
+    # start and stop indices of nonzero chunks.
+    start_idxs, stop_idxs = get_nonzero_chunk_idxs(Hobs)
     
     # check for date continuity.
     continuous, resolution = continuous_timedeltas(data['date'].to_numpy())
@@ -284,8 +287,8 @@ def swe_delta_snow(
             start_idxs,
             stop_idxs)
         if not continuous:
-            raise ValueError(("swe.deltasnow: date column must be strictly"
-                              " regular within \nchunks of consecutive nonzeros"))
+            raise ValueError(("swe.deltasnow: date column must be strictly "
+                              "regular within \nchunks of consecutive nonzeros"))
 
     if not all([x >= 0 for x in Hobs]):
         raise ValueError("swe.deltasnow: snow depth data must be positive")
@@ -316,11 +319,12 @@ def swe_delta_snow(
     if ignore_zeropadded_gaps:
         # restore nans in zeropadded gaps.
         swe = np.where(zeropadded_gap_idxs, np.nan, swe)
-    
+
+    # original R implementation (rewritten in ´.core´) returns SWE in ['mm']
     result = pd.Series(
-        data=np.multiply(swe, UNIT_FACTOR[swe_output_unit]),
+        data=swe*0.001/UNIT_FACTOR[swe_output_unit],
         index=data['date'],
-        name='swe',
+        name='swe_deltasnow',
     )
     
-    return swe
+    return result
