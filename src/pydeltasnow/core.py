@@ -12,7 +12,7 @@ https://bitbucket.org/atraxoo/snow_to_swe/src/master/
 import numpy as np
 from numba import njit
 
-#from pydeltasnow import __version__
+from pydeltasnow import __version__
 
 __author__ = "Johannes Aschauer"
 __copyright__ = "Johannes Aschauer"
@@ -24,40 +24,40 @@ PRECISION = 10e-10  # floating point precision
 
 @njit
 def _assign_H(
-    h_dd,
-    swe_dd,
-    age_dd,
-    h,
-    swe,
-    age,
-    H,
-    SWE,
-    t,
-    day_tot,
+        h_dd,
+        swe_dd,
+        age_dd,
+        h,
+        swe,
+        age,
+        H,
+        SWE,
+        t,
+        day_tot,
 ):
     """
     Assign snowpack properties of the next timestep.
     """
     if t < day_tot:
-        h[:, t+1] = h_dd
-        swe[:, t+1] = swe_dd
-        age[:, t+1] = age_dd
-        H[t+1] = np.sum(h[:, t + 1])
-        SWE[t+1] = np.sum(swe[:, t + 1])
+        h[:, t + 1] = h_dd
+        swe[:, t + 1] = swe_dd
+        age[:, t + 1] = age_dd
+        H[t + 1] = np.sum(h[:, t + 1])
+        SWE[t + 1] = np.sum(swe[:, t + 1])
 
     return h, swe, age, H, SWE
 
 
 @njit
 def _compact_H(
-    h,
-    swe,
-    swe_hat,
-    age,
-    ts,
-    eta_null,
-    k,
-    rho_max,
+        h,
+        swe,
+        swe_hat,
+        age,
+        ts,
+        eta_null,
+        k,
+        rho_max,
 ):
     """
     Compaction of individual snow layers without additional load 
@@ -76,20 +76,20 @@ def _compact_H(
 
 @njit
 def _drench_H(
-    t,
-    ly,
-    ly_tot,
-    day_tot,
-    Hobs,
-    h,
-    swe,
-    age,
-    H,
-    SWE,
-    ts,
-    eta_null,
-    k,
-    rho_max
+        t,
+        ly,
+        ly_tot,
+        day_tot,
+        Hobs,
+        h,
+        swe,
+        age,
+        H,
+        SWE,
+        ts,
+        eta_null,
+        k,
+        rho_max
 ):
     """
     Drenching of the snowpack if the observed snowdepth decreased significantly.
@@ -101,9 +101,10 @@ def _drench_H(
 
     # distribute mass top-down
     # reversed not working in numba
-    for i in range(ly-1,-1,-1):
-    # for i in reversed(range(ly)):
-        if np.sum(np.array([element for j, element in enumerate(h_d) if j != i])) + swe_d[i] / rho_max - Hobs_d >= PRECISION:
+    for i in range(ly - 1, -1, -1):
+        # for i in reversed(range(ly)):
+        if np.sum(np.array([element for j, element in enumerate(h_d) if j != i])) + swe_d[
+            i] / rho_max - Hobs_d >= PRECISION:
             # layers is densified to rho_max
             h_d[i] = swe_d[i] / rho_max
         else:
@@ -112,10 +113,10 @@ def _drench_H(
             h_d[i] = swe_d[i] / rho_max + np.abs(
                 np.sum(np.array([element for j, element in enumerate(h_d) if j != i])) + swe_d[i] / rho_max - Hobs_d)
             break
-    
+
     true_false_list = np.ones(ly, dtype="bool")
     for i, (swe_d_val, h_d_val) in enumerate(zip(swe_d[:ly], h_d[:ly])):
-        true_false_list[i] = rho_max - swe_d_val/h_d_val <= PRECISION
+        true_false_list[i] = rho_max - swe_d_val / h_d_val <= PRECISION
 
     if np.all(true_false_list):
         # no further compaction, runoff
@@ -149,15 +150,15 @@ def _drench_H(
 
 @njit
 def _dry_metamorphism(
-    h_d,
-    swe_d,
-    age_d,
-    ly_tot,
-    ly,
-    ts,
-    eta_null,
-    k,
-    rho_max
+        h_d,
+        swe_d,
+        age_d,
+        ly_tot,
+        ly,
+        ts,
+        eta_null,
+        k,
+        rho_max
 ):
     """
     Compaction of dry snowpack. 
@@ -171,8 +172,8 @@ def _dry_metamorphism(
     swe_dd = swe_d.copy()
     age_dd = age_d.copy()
     rho_dd = np.zeros(ly_tot)
-    
-    for i, (h, swe, swe_hat, age) in enumerate(zip(h_d[:ly],swe_d[:ly],swe_hat_d[:ly],age_d[:ly])):
+
+    for i, (h, swe, swe_hat, age) in enumerate(zip(h_d[:ly], swe_d[:ly], swe_hat_d[:ly], age_d[:ly])):
         h_dd[i], swe_dd[i], age_dd[i], rho_dd[i] = _compact_H(
             h,
             swe,
@@ -189,29 +190,29 @@ def _dry_metamorphism(
 
 @njit
 def _scale_H(
-    t,
-    ly,
-    ly_tot,
-    day_tot,
-    deltaH,
-    Hobs,
-    h,
-    swe,
-    age,
-    H,
-    SWE,
-    ts,
-    eta_null,
-    k,
-    rho_max,
+        t,
+        ly,
+        ly_tot,
+        day_tot,
+        deltaH,
+        Hobs,
+        h,
+        swe,
+        age,
+        H,
+        SWE,
+        ts,
+        eta_null,
+        k,
+        rho_max,
 ):
     """
     Scale snowpack if the settling was assumed a bit too strong or too weak.
     """
-    Hobs_d = Hobs[t-1]
+    Hobs_d = Hobs[t - 1]
     Hobs_dd = Hobs[t]
-    h_d = h[:, t-1]
-    swe_d = swe[:, t-1]
+    h_d = h[:, t - 1]
+    swe_d = swe[:, t - 1]
     age_d = age[:, t]
 
     # todays overburden
@@ -223,20 +224,20 @@ def _scale_H(
     # assumption: recompaction ~ linear height change of yesterdays layers (see paper)
     eta_cor = np.zeros(ly_tot)
     for i in range(ly_tot):
-        if swe_d[i]==0. or h_d[i]==0:
+        if swe_d[i] == 0. or h_d[i] == 0:
             eta_cor[i] = 0.
         else:
             rho_d = swe_d[i] / h_d[i]
             x = ts * G * swe_hat_d[i] * np.exp(-k * rho_d)  # yesterday
-            P = h_d[i] / Hobs_d # yesterday
-            eta_cor[i] = Hobs_dd * x * P / (h_d[i]-Hobs_dd*P) if (h_d[i]-Hobs_dd*P)!=0 else np.inf
+            P = h_d[i] / Hobs_d  # yesterday
+            eta_cor[i] = Hobs_dd * x * P / (h_d[i] - Hobs_dd * P) if (h_d[i] - Hobs_dd * P) != 0 else np.inf
 
     h_dd_cor = np.zeros(ly_tot)
     for i in range(ly_tot):
-        if h_d[i]==0 or eta_cor[i]==0:
+        if h_d[i] == 0 or eta_cor[i] == 0:
             h_dd_cor[i] = 0.
         else:
-            h_dd_cor[i] = h_d[i] / (1 + (swe_hat_d[i]*G*ts) / eta_cor[i]*np.exp(-k *swe_d[i]/h_d[i]))
+            h_dd_cor[i] = h_d[i] / (1 + (swe_hat_d[i] * G * ts) / eta_cor[i] * np.exp(-k * swe_d[i] / h_d[i]))
     h_dd_cor[np.isnan(h_dd_cor)] = 0
     H_dd_cor = np.sum(h_dd_cor)
 
@@ -248,11 +249,11 @@ def _scale_H(
     idx_max_arr = np.zeros(ly_tot, dtype='bool')
     for i, (swe_e_val, h_dd_cor_val) in enumerate(zip(swe_d, h_dd_cor)):
         try:
-            idx_max_arr[i] = np.divide(swe_e_val, h_dd_cor_val)-rho_max > PRECISION
+            idx_max_arr[i] = np.divide(swe_e_val, h_dd_cor_val) - rho_max > PRECISION
         except:
             idx_max_arr[i] = False
     idx_max_arr[np.isnan(idx_max_arr)] = False
-            
+
     if np.any(idx_max_arr):
         if np.count_nonzero(idx_max_arr) < ly:
             # collect excess swe in those layers
@@ -267,7 +268,7 @@ def _scale_H(
             for e in lys:
                 if e not in np.nonzero(idx_max_arr)[0]:
                     lys_non_max.append(e)
-            
+
             i = lys_non_max[-1]
             swe_excess_all = np.sum(swe_excess)
 
@@ -281,7 +282,7 @@ def _scale_H(
                 swe_excess_all = swe_excess_all - swe_res
                 i = i - 1
                 if i < 0 < swe_excess_all:
-                    #runoff
+                    # runoff
                     break
         else:
             # if all layers have density > rho.max
@@ -308,7 +309,7 @@ def _scale_H(
         k,
         rho_max,
     )
-    
+
     # set values for next day
     h, swe, age, H, SWE = _assign_H(
         h_dd,
@@ -327,15 +328,15 @@ def _scale_H(
 
 @njit
 def deltasnow_snowpack_evolution(
-    Hobs,
-    rho_max,
-    rho_null,
-    c_ov,
-    k_ov,
-    k,
-    tau,
-    eta_null,
-    resolution,
+        Hobs,
+        rho_max,
+        rho_null,
+        c_ov,
+        k_ov,
+        k,
+        tau,
+        eta_null,
+        resolution,
 ):
     """
     This is the main loop in the delta snow model. Should be called on HS chunks
@@ -387,19 +388,19 @@ def deltasnow_snowpack_evolution(
 
     ly_tot = np.count_nonzero(Hobs)  # maximum number of layers [-]
     day_tot = len(Hobs)  # total days from first to last snowfall [-]
-    
+
     # preallocate output arrays 
     H = np.zeros(day_tot)  # modeled total height of snow at any day [m]
     SWE = np.zeros(day_tot)  # modeled total SWE at any day [kg/m2]
-    
+
     # preallocate matrix as days X layers
     h = np.zeros((ly_tot, day_tot))  # modeled height of snow in all layers [m]
     swe = np.zeros((ly_tot, day_tot))  # modeled swe in all layers [kg/m2]
     age = np.zeros((ly_tot, day_tot))  # age in all layers
-    
+
     ly = 1  # layer number [-]
     ts = resolution * 3600
-    
+
     for t in range(day_tot):
         # snowdepth = 0, no snow cover
         if Hobs[t] == 0:
@@ -407,7 +408,7 @@ def deltasnow_snowpack_evolution(
             SWE[t] = 0
             h[:, t] = 0
             swe[:, t] = 0
-        
+
         # there is snow
         elif Hobs[t] > 0:  # redundant if, cause can snow height be negative?
             # first snow in/during season
@@ -455,7 +456,6 @@ def deltasnow_snowpack_evolution(
                     age[:ly - 1, t] = age[ly - 1, t - 1] + 1
                     H[t] = np.sum(h[:, t])
                     SWE[t] = np.sum(swe[:, t])
-
 
                     # only for new layer
                     ly = ly + 1
