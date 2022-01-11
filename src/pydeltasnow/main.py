@@ -275,7 +275,18 @@ def swe_delta_snow(
         raise ValueError(("swe.deltasnow: your data contains gaps at the end "
                           "or beginning of your \nseries or gaps longer than "
                           f"{max_gap_length} timesteps"))
-    
+
+    if not np.all(Hobs >= 0):
+        raise ValueError("swe.deltasnow: snow depth data must be positive")
+
+    if not np.all(np.isreal(Hobs)):
+        raise ValueError("swe.deltasnow: snow depth data must be numeric")
+
+    if Hobs[0] != 0:
+        raise ValueError(("swe.deltasnow: snow depth observations must start "
+                          "with 0 or the first non nan entry \nneeds to be "
+                          "zero if you ignore zeropadded gaps"))
+
     # start and stop indices of nonzero chunks.
     start_idxs, stop_idxs = get_nonzero_chunk_idxs(Hobs)
     
@@ -289,15 +300,6 @@ def swe_delta_snow(
         if not continuous:
             raise ValueError(("swe.deltasnow: date column must be strictly "
                               "regular within \nchunks of consecutive nonzeros"))
-
-    if not all([x >= 0 for x in Hobs]):
-        raise ValueError("swe.deltasnow: snow depth data must be positive")
-        
-    if not all([np.isreal(x) for x in Hobs]):
-        raise ValueError("swe.deltasnow: snow depth data must be numeric")
-        
-    if Hobs[0]:
-        raise ValueError("swe.deltasnow: snow depth observations must start with 0")
 
     swe_allocation = np.zeros(len(Hobs))
 
