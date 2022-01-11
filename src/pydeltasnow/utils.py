@@ -113,6 +113,7 @@ def get_nonzero_chunk_idxs(Hobs):
     start_idxs = []
     stop_idxs = []
 
+    # if first value of Hobs is not zero, set 0 as first start_idx
     if Hobs[0] != 0:
         start_idxs.append(0)
 
