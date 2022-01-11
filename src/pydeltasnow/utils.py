@@ -90,6 +90,13 @@ def get_nonzero_chunk_idxs(Hobs):
     """
     Return start and stop indices of consecutive nonzero chunks in Hobs.
 
+    A nonzero chunk is a slice in Hobs of values not zero. Nans are 
+    treated as nonzeros. The slices which are retured from this function
+    include one leading and one trailing zero since the main deltasnow 
+    loop wants an input HS array to start and end with zero. Exceptions
+    are when Hobs does not start and/or end with zero (then the first start
+    and/or last stop index is not pointing to a zero).
+
     Parameters
     ----------
     Hobs : 1D np.array of floats
