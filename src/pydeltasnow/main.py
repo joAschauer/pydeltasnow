@@ -266,7 +266,7 @@ def swe_delta_snow(
         # checks. Nans will be restored after swe calculation.
         Hobs = np.where(zeropadded_gap_idxs, 0., Hobs)
         
-    if any(np.isnan(Hobs)) and interpolate_small_gaps:
+    if np.any(np.isnan(Hobs)) and interpolate_small_gaps:
             Hobs = fill_small_gaps(
                 Hobs,
                 data['date'].to_numpy(),
@@ -274,16 +274,17 @@ def swe_delta_snow(
                 interpolation_method)
 
     # check for (remaining) missing values.
-    if (any(np.isnan(Hobs)) 
+    has_nans = np.any(np.isnan(Hobs))
+    if (has_nans
             and not ignore_zeropadded_gaps
             and not interpolate_small_gaps):
         raise ValueError("swe.deltasnow: snow depth data must not be NaN.")
-    elif (any(np.isnan(Hobs)) 
+    elif (has_nans
             and ignore_zeropadded_gaps
             and not interpolate_small_gaps):
         raise ValueError(("swe.deltasnow: your data contains NaNs surrounded "
                           "by non-zeros."))
-    elif (any(np.isnan(Hobs)) 
+    elif (has_nans
             and ignore_zeropadded_gaps
             and interpolate_small_gaps):
         raise ValueError(("swe.deltasnow: your data contains gaps at the end "
