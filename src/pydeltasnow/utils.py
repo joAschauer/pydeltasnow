@@ -132,7 +132,10 @@ def get_nonzero_chunk_idxs(Hobs):
 
 
 @njit
-def get_zeropadded_gap_idxs(Hobs):
+def get_zeropadded_gap_idxs(
+    Hobs,
+    require_leading_zero,
+):
     """
     Get indices of Nan data-gaps in Hobs that are surrounded by zeros.
 
@@ -140,6 +143,10 @@ def get_zeropadded_gap_idxs(Hobs):
     ----------
     Hobs : 1D np.array of floats
         input HS data
+
+    require_leading_zero : bool
+        Whether to include gaps that do not have a leading zero but have a 
+        trailing zero.
 
     Returns
     -------
@@ -158,9 +165,14 @@ def get_zeropadded_gap_idxs(Hobs):
             gap = True
 
         if i > 0:
-            if np.isnan(Hobs[i]) and Hobs[i-1] == 0:
-                start = i
-                gap = True
+            if require_leading_zero:
+                if np.isnan(Hobs[i]) and Hobs[i-1] == 0:
+                    start = i
+                    gap = True
+            else:
+                if np.isnan(Hobs[i]) and not np.isnan(Hobs[i-1]):
+                    start = i
+                    gap = True
 
         if i < len(Hobs)-1:
             if np.isnan(Hobs[i]) and Hobs[i+1] == 0:
