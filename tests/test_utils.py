@@ -43,51 +43,51 @@ def test_get_nonzero_chunk_idxs():
 def test_get_zeropadded_gap_idxs():
     # nans at beginning of series
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([np.nan,np.nan,0])),
+        get_zeropadded_gap_idxs(np.array([np.nan,np.nan,0]), True),
         np.array([True, True, False])
         )
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([np.nan,np.nan,1])),
+        get_zeropadded_gap_idxs(np.array([np.nan,np.nan,1]), True),
         np.array([False, False, False])
         )
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([np.nan,0,1])),
+        get_zeropadded_gap_idxs(np.array([np.nan,0,1]), True),
         np.array([True, False, False])
         )
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([np.nan,1,1])),
+        get_zeropadded_gap_idxs(np.array([np.nan,1,1]), True),
         np.array([False, False, False])
         )
 
     # end of series
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([0,np.nan,np.nan])),
+        get_zeropadded_gap_idxs(np.array([0,np.nan,np.nan]), True),
         np.array([False,True, True])
         )
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([1,np.nan,np.nan])),
+        get_zeropadded_gap_idxs(np.array([1,np.nan,np.nan]), True),
         np.array([False, False, False])
         )
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([1,0,np.nan])),
+        get_zeropadded_gap_idxs(np.array([1,0,np.nan]), True),
         np.array([False,False, True])
         )
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([1,1,np.nan])),
+        get_zeropadded_gap_idxs(np.array([1,1,np.nan]), True),
         np.array([False, False, False])
         )
 
     #single_gap
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([1,0,np.nan,0,1])),
+        get_zeropadded_gap_idxs(np.array([1,0,np.nan,0,1]), True),
         np.array([False, False, True, False, False])
         )
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([1,1,np.nan,0,1])),
+        get_zeropadded_gap_idxs(np.array([1,1,np.nan,0,1]), True),
         np.array([False, False, False, False, False])
         )
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(np.array([1,0,np.nan,1,1])),
+        get_zeropadded_gap_idxs(np.array([1,0,np.nan,1,1]), True),
         np.array([False, False, False, False, False])
         )
 
@@ -98,7 +98,69 @@ def test_get_zeropadded_gap_idxs():
        False, False, False, False, False, False, False, False,  True,
         True,  True])
     np.testing.assert_array_equal(
-        get_zeropadded_gap_idxs(long_in),
+        get_zeropadded_gap_idxs(long_in, True),
+        long_expected)
+
+    # gaps with trailing zero only:
+    # =============================
+    # nans at beginning of series
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([np.nan,np.nan,0]), False),
+        np.array([True, True, False])
+        )
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([np.nan,np.nan,1]), False),
+        np.array([False, False, False])
+        )
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([np.nan,0,1]), False),
+        np.array([True, False, False])
+        )
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([np.nan,1,1]), False),
+        np.array([False, False, False])
+        )
+
+    # end of series
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([0,np.nan,np.nan]), False),
+        np.array([False,True, True])
+        )
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([1,np.nan,np.nan]), False),
+        np.array([False, True, True])
+        )
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([1,0,np.nan]), False),
+        np.array([False,False, True])
+        )
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([1,1,np.nan]), False),
+        np.array([False, False, True])
+        )
+
+    #single_gap
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([1,0,np.nan,0,1]), False),
+        np.array([False, False, True, False, False])
+        )
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([1,1,np.nan,0,1]), False),
+        np.array([False, False, True, False, False])
+        )
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(np.array([1,0,np.nan,1,1]), False),
+        np.array([False, False, False, False, False])
+        )
+
+    # long series:
+    long_in = np.array([np.nan,np.nan,0,3,4,5,6,7,7,3,np.nan,np.nan,0,9,0,np.nan,np.nan,np.nan,0,7,0,np.nan,np.nan,8,0,0,np.nan,np.nan,np.nan], dtype='float64')
+    long_expected = np.array([ True,  True, False, False, False, False, False, False, False,
+       False, True, True, False, False, False,  True,  True,  True,
+       False, False, False, False, False, False, False, False,  True,
+        True,  True])
+    np.testing.assert_array_equal(
+        get_zeropadded_gap_idxs(long_in, False),
         long_expected)
 
 

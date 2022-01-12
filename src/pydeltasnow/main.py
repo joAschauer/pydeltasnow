@@ -130,6 +130,7 @@ def swe_delta_snow(
     hs_input_unit='m',
     swe_output_unit='mm',
     ignore_zeropadded_gaps=False,
+    ignore_trailingzero_gaps=False,
     interpolate_small_gaps=False,
     max_gap_length=3,
     interpolation_method='linear',
@@ -192,7 +193,13 @@ def swe_delta_snow(
         The unit of the output snow water equivalent. The default is 'mm'.
     ignore_zeropadded_gaps : bool
         Whether to ignore gaps that have leading and trailing zeros. The 
-        resulting SWE series will contain NaNs at the same positions.
+        resulting SWE series will contain NaNs at the same positions. These 
+        gaps are also ignored when you use `ignore_trailingzero_gaps`.
+    ignore_trailingzero_gaps : bool
+        Less strict rule than `ignore_zeropadded_gaps`. Whether to ignore gaps
+        that have trailing zeros. This can lead to sudden drops in SWE in case
+        missing HS data is present. The resulting SWE series will contain NaNs 
+        at the same positions.
     interpolate_small_gaps : bool
         Whether to interpolate small gaps in the input HS data or not. Only gaps
         that are surrounded by data points and have continuous date spacing 
@@ -246,8 +253,15 @@ def swe_delta_snow(
     data = data.sort_values(by='date')
     Hobs = data['hs'].mul(UNIT_FACTOR[hs_input_unit]).to_numpy()
     
-    if ignore_zeropadded_gaps:
-        zeropadded_gap_idxs = get_zeropadded_gap_idxs(Hobs)
+    if ignore_zeropadded_gaps or ignore_trailingzero_gaps:
+        if ignore_trailingzero_gaps:
+            zeropadded_gap_idxs = get_zeropadded_gap_idxs(
+                Hobs, 
+                require_leading_zero=False)
+        else:  # ignore_zeropadded_gaps with zero in front and back
+            zeropadded_gap_idxs = get_zeropadded_gap_idxs(
+                Hobs,
+                require_leading_zero=True)
         # replace the found gaps with zeros in Hobs in order to pass subsequent
         # checks. Nans will be restored after swe calculation.
         Hobs = np.where(zeropadded_gap_idxs, 0., Hobs)
@@ -318,7 +332,7 @@ def swe_delta_snow(
         resolution,
     )
     
-    if ignore_zeropadded_gaps:
+    if ignore_zeropadded_gaps or ignore_trailingzero_gaps:
         # restore nans in zeropadded gaps.
         swe = np.where(zeropadded_gap_idxs, np.nan, swe)
 
