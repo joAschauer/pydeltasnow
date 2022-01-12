@@ -144,18 +144,20 @@ def swe_delta_snow(
           pd.DatetimeIndex and HS data.
         - The time resolution (timestep in R implementation) will be automatically 
           sniffed from the 'date' column or DatetimeIndex
-        - The model accepts breaks in the date series when there are only zeros
-          surrounding the break. This is useful for measurement series that are 
-          not continued in summer.
         - The user can specify the input and output units of the HS and SWE
           measurement series, respectively.
-        - The user can specify how to deal with missing values in a measurement 
-          series. There are two parameters that control NaN handling:
+        - The model can accept breaks in the date series when these are small
+          or when a break is sourrounded by zeros or is followed by a zero.
+          This can be useful for measurement series that are not continued in 
+          summer or which suddenly end e.g. by the end of April.
+          Accordingly, the user can specify how to deal with missing values in
+          a measurement series. There are three parameters that control NaN
+          handling:
             - 'ignore_zeropadded_gaps'
+            - 'ignore_trailingzero_gaps'
             - 'interpolate_small_gaps'
-          Note that the runtime efficiency of the model will decrease when these
-          two options are turnded on (i.e. 'ignore_zeropadded_gaps'==True and 
-          'interpolate_small_gaps'==True)
+          Note that the runtime efficiency of the model will decrease when one 
+          or several of these options are turnded on.
         - A pd.Series with the dates as pd.DatetimeIndex is returned.
 
 
