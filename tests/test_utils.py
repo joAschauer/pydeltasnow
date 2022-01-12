@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from pydeltasnow.utils import (
+    get_nonzero_chunk_idxs,
     get_small_gap_idxs,
     get_zeropadded_gap_idxs,
     )
@@ -18,12 +19,25 @@ def test_continuous_timedeltas():
 
 
 def test_get_nonzero_chunk_idxs():
-    # TODO
-    # np.testing.assert_array_equal(
-    #     get_nonyero_chunk_idxs(np.array([np.nan,np.nan,0])),
-    #     np.array([True, True, False])
-    #     )
-    pass
+    def check_sample(
+            sample_in,
+            start_idxs_expected,
+            stop_idxs_expected):
+        start, stop = get_nonzero_chunk_idxs(sample_in)
+        np.testing.assert_array_equal(start, start_idxs_expected)
+        np.testing.assert_array_equal(stop, stop_idxs_expected)
+
+    sample = np.array([0,0,1,1,1,1,0,0])
+    start_expected = np.array([1])
+    stop_expected = np.array([6])
+    check_sample(sample, start_expected, stop_expected)
+
+    sample = np.array([1,1,1,0,0])
+    start_expected = np.array([0])
+    stop_expected = np.array([3])
+    check_sample(sample, start_expected, stop_expected)
+
+
 
 
 def test_get_zeropadded_gap_idxs():
