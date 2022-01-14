@@ -6,6 +6,9 @@
 library(nixmass)
 library(data.table)
 
+this_dir <- dirname(parent.frame(2)$ofile)
+setwd(this_dir)
+
 CalculateNixmassOnCsv <- function(hs_datafile, swe_outfile){
   #' Calculate nixmass deltasnow on the data in a csv file.
   #'
@@ -19,10 +22,10 @@ CalculateNixmassOnCsv <- function(hs_datafile, swe_outfile){
   for (hyear in unique(df$hjahr)) {
     hs_data_y <- df[which(df$hjahr==hyear),]
     SWEnixmass_y <- nixmass(hs_data_y, model="delta.snow",verbose=F)
-    SWE_delta_snow <- SWEnixmass_y$swe$delta.snow
+    swe_deltasnow <- SWEnixmass_y$swe$delta.snow
     date <- SWEnixmass_y$date
     
-    out_df <- data.frame(date, SWE_delta_snow)
+    out_df <- data.frame(date, swe_deltasnow)
     data_list <- append(data_list, list(out_df))
   }
 
