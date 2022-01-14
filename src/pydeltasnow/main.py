@@ -130,7 +130,7 @@ def swe_delta_snow(
     hs_input_unit='m',
     swe_output_unit='mm',
     ignore_zeropadded_gaps=False,
-    ignore_trailingzero_gaps=False,
+    ignore_zerofollowed_gaps=False,
     interpolate_small_gaps=False,
     max_gap_length=3,
     interpolation_method='linear',
@@ -154,7 +154,7 @@ def swe_delta_snow(
           a measurement series. There are three parameters that control NaN
           handling:
             - 'ignore_zeropadded_gaps'
-            - 'ignore_trailingzero_gaps'
+            - 'ignore_zerofollowed_gaps'
             - 'interpolate_small_gaps'
           Note that the runtime efficiency of the model will decrease when one 
           or several of these options are turnded on.
@@ -196,8 +196,8 @@ def swe_delta_snow(
     ignore_zeropadded_gaps : bool
         Whether to ignore gaps that have leading and trailing zeros. The 
         resulting SWE series will contain NaNs at the same positions. These 
-        gaps are also ignored when you use `ignore_trailingzero_gaps`.
-    ignore_trailingzero_gaps : bool
+        gaps are also ignored when you use `ignore_zerofollowed_gaps`.
+    ignore_zerofollowed_gaps : bool
         Less strict rule than `ignore_zeropadded_gaps`. Whether to ignore gaps
         that have trailing zeros. This can lead to sudden drops in SWE in case
         missing HS data is present. The resulting SWE series will contain NaNs 
@@ -255,8 +255,8 @@ def swe_delta_snow(
     data = data.sort_values(by='date')
     Hobs = data['hs'].mul(UNIT_FACTOR[hs_input_unit]).to_numpy()
     
-    if ignore_zeropadded_gaps or ignore_trailingzero_gaps:
-        if ignore_trailingzero_gaps:
+    if ignore_zeropadded_gaps or ignore_zerofollowed_gaps:
+        if ignore_zerofollowed_gaps:
             zeropadded_gap_idxs = get_zeropadded_gap_idxs(
                 Hobs, 
                 require_leading_zero=False)
@@ -335,7 +335,7 @@ def swe_delta_snow(
         resolution,
     )
     
-    if ignore_zeropadded_gaps or ignore_trailingzero_gaps:
+    if ignore_zeropadded_gaps or ignore_zerofollowed_gaps:
         # restore nans in zeropadded gaps.
         swe = np.where(zeropadded_gap_idxs, np.nan, swe)
 
