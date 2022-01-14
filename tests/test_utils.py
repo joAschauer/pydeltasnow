@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from pydeltasnow.utils import (
+    continuous_timedeltas,
     get_nonzero_chunk_idxs,
     get_small_gap_idxs,
     get_zeropadded_gap_idxs,
@@ -13,31 +14,58 @@ __copyright__ = "Johannes Aschauer"
 __license__ = "GPL-2.0-or-later"
 
 
-def test_continuous_timedeltas():
-    # TODO
-    pass
+@pytest.fixture
+def dates_continuous_one_day():
+    dates = pd.date_range(start='2000-01-01', periods=9, freq='D').to_numpy()
+    return dates
 
 
-def test_get_nonzero_chunk_idxs():
-    def check_sample(
-            sample_in,
-            start_idxs_expected,
-            stop_idxs_expected):
-        start, stop = get_nonzero_chunk_idxs(sample_in)
-        np.testing.assert_array_equal(start, start_idxs_expected)
-        np.testing.assert_array_equal(stop, stop_idxs_expected)
-
-    sample = np.array([0,0,1,1,1,1,0,0])
-    start_expected = np.array([1])
-    stop_expected = np.array([6])
-    check_sample(sample, start_expected, stop_expected)
-
-    sample = np.array([1,1,1,0,0])
-    start_expected = np.array([0])
-    stop_expected = np.array([3])
-    check_sample(sample, start_expected, stop_expected)
+@pytest.fixture
+def dates_incontinuous_one_day():
+    dates = pd.date_range(start='2000-01-01', periods=9, freq='D').to_numpy()
+    dates[4:] = dates[4:] + np.timedelta64(2, "D")
+    return dates
 
 
+@pytest.fixture
+def dates_continuous_two_days():
+    dates = pd.date_range(start='2000-01-01', periods=9, freq='2D').to_numpy()
+    return dates
+
+
+@pytest.mark.parametrize(
+    "input_dates, continuous_expected, resolution_expected",
+    [
+        ("dates_continuous_one_day", True, 24),
+        ("dates_incontinuous_one_day", False, 24),
+        ("dates_continuous_two_days", True, 48),
+    ],
+)
+def test_continuous_timedeltas(
+    input_dates, 
+    continuous_expected,
+    resolution_expected,
+    request
+):
+    input_dates = request.getfixturevalue(input_dates)
+    contiuous, resolution = continuous_timedeltas(input_dates)
+    assert contiuous == continuous_expected
+    assert resolution == resolution_expected
+
+
+@pytest.mark.parametrize(
+    "sample, start_expected, stop_expected",
+    [
+        (np.array([0,0,1,1,1,1,0,0]), np.array([1]), np.array([6])),
+        (np.array([1,1,1,0,0]), np.array([0]), np.array([3])),
+        (np.array([0,0,0,1,1,1]), np.array([2]), np.array([6])),
+        (np.array([0,1,0,3,4,0,6,0,0,9,0]), np.array([0,2,5,8]), np.array([2,5,7,10])),
+    ],
+)
+def test_get_nonzero_chunk_idxs(sample, start_expected, stop_expected):
+    start_out, stop_out = get_nonzero_chunk_idxs(sample)
+    np.testing.assert_array_equal(start_out, start_expected)
+    np.testing.assert_array_equal(stop_out, stop_expected)
 
 
 def test_get_zeropadded_gap_idxs():
