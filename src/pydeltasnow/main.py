@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Reimplementation of the delta.snow model by Winkler et al 2021:
-    
+
 Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
 exclusively from snow depths and their temporal changes: the delta.snow model,
-Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021. 
+Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021.
 
 The core of this code is mainly based on the work of Manuel Theurl:
 https://bitbucket.org/atraxoo/snow_to_swe/src/master/
@@ -29,7 +29,7 @@ from .utils import (
     get_nonzero_chunk_idxs,
     get_zeropadded_gap_idxs,
     )
-    
+
 from pydeltasnow import __version__
 
 __author__ = "Johannes Aschauer"
@@ -42,6 +42,38 @@ UNIT_FACTOR = {
     'cm': 0.01,
     'm': 1.0,
     }
+
+
+def _raise_nans_error_message(
+    ignore_zeropadded_gaps,
+    ignore_zerofollowed_gaps,
+    interpolate_small_gaps,
+    max_gap_length
+):
+    if (any([ignore_zeropadded_gaps, ignore_zerofollowed_gaps])
+            and not interpolate_small_gaps):
+        raise ValueError(("swe.deltasnow: your data contains NaNs surrounded "
+                          "or followed by non-zeros."))
+    elif (any([ignore_zeropadded_gaps, ignore_zerofollowed_gaps])
+            and interpolate_small_gaps):
+        raise ValueError(("swe.deltasnow: your data contains gaps of NaNs "
+                          "that are either:\n"
+                          "    - at the the end or beginning of your series\n"
+                          f"    - longer than {max_gap_length} timesteps and "
+                          "not surrounded or followed by nonzeros\n"
+                          f"    - shorter than {max_gap_length} timestep(s) "
+                          "but with breaks in the date index"))
+    elif (interpolate_small_gaps 
+            and not any([ignore_zeropadded_gaps, ignore_zerofollowed_gaps])):
+        raise ValueError(("swe.deltasnow: your data contains gaps of NaNs "
+                          "that are either:\n"
+                          "    - at the the end or beginning of your series\n"
+                          f"    - longer than {max_gap_length} timestep(s)\n"
+                          f"    - shorter than {max_gap_length} timestep(s) "
+                          "but with breaks in the date index"))
+    else:
+        raise ValueError("swe.deltasnow: snow depth data must not be NaN.")
+
 
 @njit
 def _deltasnow_on_nonzero_chunks(
@@ -63,7 +95,7 @@ def _deltasnow_on_nonzero_chunks(
 
     Parameters
     ----------
-    Hobs : 1D np.array of floats 
+    Hobs : 1D np.array of floats
         Measured snow height. Needs to be in [m].
     swe_out : 1D np.array of floats
         preallocated swe array where the output is stored to. Same shape as Hobs.
@@ -72,7 +104,7 @@ def _deltasnow_on_nonzero_chunks(
     stop_idxs : np.array of int
         Last indices of windows with nonzeroes in Hobs.
     rho_max : float, optional
-        Maximum density of an individual snow layer produced by the deltasnow 
+        Maximum density of an individual snow layer produced by the deltasnow
         model in [kg/m3], rho_max needs to be positive. The default is 401.2588.
     rho_null : float, optional
         Fresh snow density for a newly created layer [kg/m3], rho_null needs to
@@ -99,7 +131,7 @@ def _deltasnow_on_nonzero_chunks(
     Returns
     -------
     swe_out : np.array
-    
+
     """
 
     for start, stop in zip(start_idxs, stop_idxs):
@@ -114,7 +146,7 @@ def _deltasnow_on_nonzero_chunks(
             eta_null,
             resolution,
             )
-    
+
     return swe_out
 
 
@@ -137,19 +169,19 @@ def swe_deltasnow(
     output_series_name='swe_deltasnow',
 ):
     """
-    Calculate snow water equivalent (SWE) with the delta.snow model on a snow 
+    Calculate snow water equivalent (SWE) with the delta.snow model on a snow
     depth (HS) timeseries.
-    
+
     Differences to the original R implementation of Winkler et al 2021:
         - Accepts a pd.DataFrame with columns 'date' and 'hs' or pd.Series with
           pd.DatetimeIndex and HS data.
-        - The time resolution (timestep in R implementation) will be automatically 
+        - The time resolution (timestep in R implementation) will be automatically
           sniffed from the 'date' column or DatetimeIndex
         - The user can specify the input and output units of the HS and SWE
           measurement series, respectively.
         - The model can accept breaks in the date series when these are small
           or when a break is sourrounded by zeros or is followed by a zero.
-          This can be useful for measurement series that are not continued in 
+          This can be useful for measurement series that are not continued in
           summer or which suddenly end e.g. by the end of April.
           Accordingly, the user can specify how to deal with missing values in
           a measurement series. There are three parameters that control NaN
@@ -157,7 +189,7 @@ def swe_deltasnow(
             - 'ignore_zeropadded_gaps'
             - 'ignore_zerofollowed_gaps'
             - 'interpolate_small_gaps'
-          Note that the runtime efficiency of the model will decrease when one 
+          Note that the runtime efficiency of the model will decrease when one
           or several of these options are turnded on.
         - A pd.Series with the dates as pd.DatetimeIndex is returned.
 
@@ -169,7 +201,7 @@ def swe_deltasnow(
             - pd.DataFrame with columns 'hs and 'date'
             - pd.Series with pd.DatetimeIndex
     rho_max : float, optional
-        Maximum density of an individual snow layer produced by the deltasnow 
+        Maximum density of an individual snow layer produced by the deltasnow
         model in [kg/m3], rho_max needs to be positive. The default is 401.2588.
     rho_null : float, optional
         Fresh snow density for a newly created layer [kg/m3], rho_null needs to
@@ -195,23 +227,23 @@ def swe_deltasnow(
     swe_output_unit : str in {'mm', 'cm', 'm'}
         The unit of the output snow water equivalent. The default is 'mm'.
     ignore_zeropadded_gaps : bool
-        Whether to ignore gaps that have leading and trailing zeros. The 
-        resulting SWE series will contain NaNs at the same positions. These 
+        Whether to ignore gaps that have leading and trailing zeros. The
+        resulting SWE series will contain NaNs at the same positions. These
         gaps are also ignored when you use `ignore_zerofollowed_gaps`.
     ignore_zerofollowed_gaps : bool
         Less strict rule than `ignore_zeropadded_gaps`. Whether to ignore gaps
         that have trailing zeros. This can lead to sudden drops in SWE in case
-        missing HS data is present. The resulting SWE series will contain NaNs 
+        missing HS data is present. The resulting SWE series will contain NaNs
         at the same positions.
     interpolate_small_gaps : bool
         Whether to interpolate small gaps in the input HS data or not. Only gaps
-        that are surrounded by data points and have continuous date spacing 
+        that are surrounded by data points and have continuous date spacing
         between the leading and trailing data point are interpolated.
     max_gap_length : int
-        The maximum gap length of HS data gaps that are interpolated if 
-        `interpolate_small_gaps` is True. 
+        The maximum gap length of HS data gaps that are interpolated if
+        `interpolate_small_gaps` is True.
     interpolation_method : str
-        Interpolation method for the small gaps which is passed to 
+        Interpolation method for the small gaps which is passed to
         pandas.Series.interpolate(). See the documentation for valid options.
         The default is 'linear'.
     output_series_name : str
@@ -226,18 +258,20 @@ def swe_deltasnow(
 
     Returns
     -------
-    swe : pd.Series 
+    swe : pd.Series
         Calculated SWE with 'date' column of the input data as pd.DatetimeIndex.
 
     """
     data = data.copy()
-    
-    assert hs_input_unit in UNIT_FACTOR.keys(), "swe.deltasnow: hs_input_unit has to be in {'mm', 'cm', 'm'}"
-    assert swe_output_unit in UNIT_FACTOR.keys(), "swe.deltasnow: swe_output_unit has to be in {'mm', 'cm', 'm'}"
-    
+
+    for unit in [hs_input_unit, swe_output_unit]:
+        assert unit in UNIT_FACTOR.keys(), (f"swe.deltasnow: {unit} has to be "
+                                            "in {'mm', 'cm', 'm'}")
+
     if not isinstance(data, pd.DataFrame):
         if not isinstance(data, pd.Series):
-            raise ValueError("swe.deltasnow: data must be pd.DataFrame or pd.Series")
+            raise ValueError(("swe.deltasnow: data must be pd.DataFrame or"
+                              " pd.Series"))
         else:
             data = (data
                     .rename('hs')
@@ -246,7 +280,7 @@ def swe_deltasnow(
                                         data.index.name: 'date'},
                             errors='ignore')
                     )
-    
+
     if any([c not in data.columns for c in ['date', 'hs']]):
         raise ValueError(("swe.deltasnow: data must be a pd.Series with "
                           "pd.DatetimeIndex or a pd.Dataframe containing "
@@ -262,11 +296,11 @@ def swe_deltasnow(
 
     data = data.sort_values(by='date')
     Hobs = data['hs'].mul(UNIT_FACTOR[hs_input_unit]).to_numpy()
-    
+
     if ignore_zeropadded_gaps or ignore_zerofollowed_gaps:
         if ignore_zerofollowed_gaps:
             zeropadded_gap_idxs = get_zeropadded_gap_idxs(
-                Hobs, 
+                Hobs,
                 require_leading_zero=False)
         else:  # ignore_zeropadded_gaps with zero in front and back
             zeropadded_gap_idxs = get_zeropadded_gap_idxs(
@@ -275,7 +309,7 @@ def swe_deltasnow(
         # replace the found gaps with zeros in Hobs in order to pass subsequent
         # checks. Nans will be restored after swe calculation.
         Hobs = np.where(zeropadded_gap_idxs, 0., Hobs)
-        
+
     if np.any(np.isnan(Hobs)) and interpolate_small_gaps:
             Hobs = fill_small_gaps(
                 Hobs,
@@ -284,22 +318,13 @@ def swe_deltasnow(
                 interpolation_method)
 
     # check for (remaining) missing values.
-    has_nans = np.any(np.isnan(Hobs))
-    if (has_nans
-            and not ignore_zeropadded_gaps
-            and not interpolate_small_gaps):
-        raise ValueError("swe.deltasnow: snow depth data must not be NaN.")
-    elif (has_nans
-            and ignore_zeropadded_gaps
-            and not interpolate_small_gaps):
-        raise ValueError(("swe.deltasnow: your data contains NaNs surrounded "
-                          "by non-zeros."))
-    elif (has_nans
-            and ignore_zeropadded_gaps
-            and interpolate_small_gaps):
-        raise ValueError(("swe.deltasnow: your data contains gaps at the end "
-                          "or beginning of your \nseries or gaps longer than "
-                          f"{max_gap_length} timesteps"))
+    if np.any(np.isnan(Hobs)):
+        _raise_nans_error_message(
+            ignore_zeropadded_gaps,
+            ignore_zerofollowed_gaps,
+            interpolate_small_gaps,
+            max_gap_length,
+        )
 
     if not np.all(Hobs >= 0):
         raise ValueError("swe.deltasnow: snow depth data must be positive")
@@ -310,11 +335,11 @@ def swe_deltasnow(
     if Hobs[0] != 0:
         raise ValueError(("swe.deltasnow: snow depth observations must start "
                           "with 0 or the first non nan entry \nneeds to be "
-                          "zero if you ignore zeropadded gaps"))
+                          "zero if you ignore zeropadded or zerofollowed gaps"))
 
     # start and stop indices of nonzero chunks.
     start_idxs, stop_idxs = get_nonzero_chunk_idxs(Hobs)
-    
+
     # check for date continuity.
     continuous, resolution = continuous_timedeltas_in_nonzero_chunks(
         data['date'].to_numpy(),
@@ -322,7 +347,7 @@ def swe_deltasnow(
         stop_idxs)
     if not continuous:
         raise ValueError(("swe.deltasnow: date column must be strictly "
-                            "regular within \nchunks of consecutive nonzeros"))
+                          "regular within \nchunks of consecutive nonzeros"))
 
     swe_allocation = np.zeros(len(Hobs))
 
@@ -340,7 +365,7 @@ def swe_deltasnow(
         eta_null,
         resolution,
     )
-    
+
     if ignore_zeropadded_gaps or ignore_zerofollowed_gaps:
         # restore nans in zeropadded gaps.
         swe = np.where(zeropadded_gap_idxs, np.nan, swe)
