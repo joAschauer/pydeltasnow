@@ -239,23 +239,27 @@ def swe_deltasnow(
         if not isinstance(data, pd.Series):
             raise ValueError("swe.deltasnow: data must be pd.DataFrame or pd.Series")
         else:
-            if not isinstance(data.index, pd.DatetimeIndex):
-                raise ValueError("swe.deltasnow: pd.Series needs pd.DatetimeIndex as index.")
-            
-            else: # convert series to dataframe
-                data = (data
-                        .rename('hs')
-                        .reset_index(drop=False)
-                        .rename(columns={'index': 'date',
-                                         data.index.name: 'date'},
-                                errors='ignore')
-                        )
+            data = (data
+                    .rename('hs')
+                    .reset_index(drop=False)
+                    .rename(columns={'index': 'date',
+                                        data.index.name: 'date'},
+                            errors='ignore')
+                    )
     
     if any([c not in data.columns for c in ['date', 'hs']]):
-        raise ValueError(("swe.deltasnow: data must be a pd.Series with pd.DatetimeIndex or a pd.Dataframe" 
-                          "containing at least two columns named 'hs' and 'date'"))
-    
-    data['date'] = pd.to_datetime(data['date'])
+        raise ValueError(("swe.deltasnow: data must be a pd.Series with "
+                          "pd.DatetimeIndex or a pd.Dataframe containing "
+                          "at least two columns named 'hs' and 'date'"))
+
+    if not pd.api.types.is_datetime64_any_dtype(data['date']):
+        if isinstance(data, pd.DataFrame):
+            raise ValueError(("swe.deltasnow: date column in data needs to be "
+                              "of datetime64 dtype."))
+        if isinstance(data, pd.Series):
+            raise ValueError(("swe.deltasnow: data needs pd.DatetimeIndex as "
+                              "index."))
+
     data = data.sort_values(by='date')
     Hobs = data['hs'].mul(UNIT_FACTOR[hs_input_unit]).to_numpy()
     
