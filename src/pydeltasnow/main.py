@@ -316,15 +316,13 @@ def swe_deltasnow(
     start_idxs, stop_idxs = get_nonzero_chunk_idxs(Hobs)
     
     # check for date continuity.
-    continuous, resolution = continuous_timedeltas(data['date'].to_numpy())
+    continuous, resolution = continuous_timedeltas_in_nonzero_chunks(
+        data['date'].to_numpy(),
+        start_idxs,
+        stop_idxs)
     if not continuous:
-        continuous, resolution = continuous_timedeltas_in_nonzero_chunks(
-            data['date'].to_numpy(),
-            start_idxs,
-            stop_idxs)
-        if not continuous:
-            raise ValueError(("swe.deltasnow: date column must be strictly "
-                              "regular within \nchunks of consecutive nonzeros"))
+        raise ValueError(("swe.deltasnow: date column must be strictly "
+                            "regular within \nchunks of consecutive nonzeros"))
 
     swe_allocation = np.zeros(len(Hobs))
 
