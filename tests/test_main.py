@@ -17,7 +17,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from pydeltasnow import swe_delta_snow
+from pydeltasnow import swe_deltasnow
 
 __author__ = "Johannes Aschauer"
 __copyright__ = "Johannes Aschauer"
@@ -98,14 +98,14 @@ def swe_1ad_as_series(datadir):
         ("hs_1ad_as_df", "swe_1ad_as_series")
     ],
 )
-def test_swe_delta_snow_against_nixmass(
+def test_swe_deltasnow_against_nixmass(
     input_hs_data,
     nixmass_swe_data,
     request
 ):
     input_hs_data = request.getfixturevalue(input_hs_data)
     nixmass_swe_data = request.getfixturevalue(nixmass_swe_data)
-    swe_pydeltasnow = swe_delta_snow(input_hs_data)
+    swe_pydeltasnow = swe_deltasnow(input_hs_data)
     pd.testing.assert_series_equal(swe_pydeltasnow, nixmass_swe_data)
 
 
@@ -145,11 +145,11 @@ def test_zeropadded_gaps(
     hs_5wj_with_zeropadded_gaps,
     swe_5wj_with_zeropadded_gaps
 ):
-    swe_pydeltasnow = swe_delta_snow(hs_5wj_with_zeropadded_gaps,
+    swe_pydeltasnow = swe_deltasnow(hs_5wj_with_zeropadded_gaps,
                                      ignore_zeropadded_gaps=True)
     pd.testing.assert_series_equal(swe_pydeltasnow, swe_5wj_with_zeropadded_gaps)
 
-    swe_pydeltasnow = swe_delta_snow(hs_5wj_with_zeropadded_gaps,
+    swe_pydeltasnow = swe_deltasnow(hs_5wj_with_zeropadded_gaps,
                                      ignore_zerofollowed_gaps=True)
     pd.testing.assert_series_equal(swe_pydeltasnow, swe_5wj_with_zeropadded_gaps)
 
@@ -159,10 +159,10 @@ def test_zerofollowed_gaps(
     swe_5wj_with_zerofollowed_gaps):
 
     with pytest.raises(ValueError):
-        swe_pydeltasnow = swe_delta_snow(hs_5wj_with_zerofollowed_gaps,
+        swe_pydeltasnow = swe_deltasnow(hs_5wj_with_zerofollowed_gaps,
                                          ignore_zeropadded_gaps=True)
 
-    swe_pydeltasnow = swe_delta_snow(hs_5wj_with_zerofollowed_gaps,
+    swe_pydeltasnow = swe_deltasnow(hs_5wj_with_zerofollowed_gaps,
                                      ignore_zerofollowed_gaps=True)
     pd.testing.assert_series_equal(swe_pydeltasnow, swe_5wj_with_zerofollowed_gaps)
 
@@ -170,5 +170,5 @@ def test_zerofollowed_gaps(
 def test_series_input(hs_5wj_as_df, swe_5wj_as_series):
     hs_series = hs_5wj_as_df.set_index('date', drop=True)['hs']
     hs_series.index = hs_series.index.rename("nonsense_index_name")
-    swe_pydeltasnow = swe_delta_snow(hs_series)
+    swe_pydeltasnow = swe_deltasnow(hs_series)
     pd.testing.assert_series_equal(swe_pydeltasnow, swe_5wj_as_series)

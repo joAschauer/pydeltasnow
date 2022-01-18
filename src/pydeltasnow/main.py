@@ -118,7 +118,7 @@ def _deltasnow_on_nonzero_chunks(
     return swe_out
 
 
-def swe_delta_snow(
+def swe_deltasnow(
     data,
     rho_max=401.2588,
     rho_null=81.19417,

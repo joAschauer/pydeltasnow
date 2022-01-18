@@ -14,4 +14,4 @@ except PackageNotFoundError:  # pragma: no cover
 finally:
     del version, PackageNotFoundError
 
-from pydeltasnow.main import swe_delta_snow 
+from pydeltasnow.main import swe_deltasnow
