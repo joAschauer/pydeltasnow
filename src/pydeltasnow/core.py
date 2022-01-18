@@ -453,7 +453,7 @@ def deltasnow_snowpack_evolution(
                     epsilon = c_ov * sigma_null * np.exp(-k_ov * rho_dd / (rho_max - rho_dd))
                     h[:, t] = (1 - epsilon) * h[:, t]
                     swe[:, t] = swe[:, t - 1]
-                    age[:ly - 1, t] = age[ly - 1, t - 1] + 1
+                    age[:ly, t] = age[:ly, t - 1] + 1
                     H[t] = np.sum(h[:, t])
                     SWE[t] = np.sum(swe[:, t])
 
