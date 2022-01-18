@@ -134,6 +134,7 @@ def swe_deltasnow(
     interpolate_small_gaps=False,
     max_gap_length=3,
     interpolation_method='linear',
+    output_series_name='swe_deltasnow',
 ):
     """
     Calculate snow water equivalent (SWE) with the delta.snow model on a snow 
@@ -213,7 +214,10 @@ def swe_deltasnow(
         Interpolation method for the small gaps which is passed to 
         pandas.Series.interpolate(). See the documentation for valid options.
         The default is 'linear'.
-    
+    output_series_name : str
+        The name of the resulting pd.Series. This can be useful if you want to
+        add the resulting SWE series to an existing DataFrame and need a
+        specific column name. The default is 'swe_deltasnow'.
 
     Raises
     ------
@@ -343,7 +347,7 @@ def swe_deltasnow(
     result = pd.Series(
         data=swe*0.001/UNIT_FACTOR[swe_output_unit],
         index=data['date'],
-        name='swe_deltasnow',
+        name=output_series_name,
     )
-    
+
     return result
