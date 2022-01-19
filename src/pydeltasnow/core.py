@@ -1,12 +1,15 @@
 """
-Core of the delta.snow model by Winkler et al 2021:
-    
-Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
-exclusively from snow depths and their temporal changes: the delta.snow model,
-Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021. 
+Core of the DeltaSNOW model by Winkler et al 2021:
 
-The core of this code is mainly based on the work of Manuel Theurl:
-https://bitbucket.org/atraxoo/snow_to_swe/src/master/
+Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
+exclusively from snow depths and their temporal changes: the DeltaSNOW model,
+Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021.
+
+The original implementation is included in the `nixmass` R package:
+https://CRAN.R-project.org/package=nixmass
+
+This code is mainly based on the work of Manuel Theurl:
+https://github.com/manueltheurl/snow_to_swe
 
 """
 import numpy as np

@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Reimplementation of the DeltaSNOW model by Winkler et al 2021:
+Main module for the reimplementation of the DeltaSNOW model.
 
 Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
-exclusively from snow depths and their temporal changes: the delta.snow model,
+exclusively from snow depths and their temporal changes: the DeltaSNOW model,
 Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021.
 
-The core of this code is mainly based on the work of Manuel Theurl:
-https://bitbucket.org/atraxoo/snow_to_swe/src/master/
+The original implementation is included in the `nixmass` R package:
+https://CRAN.R-project.org/package=nixmass
 
-This version uses numba just-in-time compilation for significant performance
-improvements.
+The core of this code is mainly based on the work of Manuel Theurl:
+https://github.com/manueltheurl/snow_to_swe
+
+This module provides the API for for this implementation with the 
+`func:swe_delatsnow` function.
 
 """
 import pandas as pd
@@ -168,18 +171,18 @@ def swe_deltasnow(
     Calculate snow water equivalent (SWE) with the DeltaSNOW model on a snow
     depth (HS) timeseries.
 
-    Differences to the original R implementation of Winkler et al 2021:
-        - Accepts a pd.DataFrame with columns 'date' and 'hs' or pd.Series with
-          pd.DatetimeIndex and HS data. If a DataFrame, the date column needs
-          to be of `datetime64` dtype.
+    Differences to the original R implementation within the `nixmass` package
+    of Winkler et al 2021:
+        - Accepts as input data only a pd.Series with pd.DatetimeIndex and no
+          dataframe.
         - The time resolution (timestep in R implementation) will be automatically
           sniffed from the 'date' column or DatetimeIndex
         - The user can specify the input and output units of the HS and SWE
           measurement series, respectively.
         - The model accepts breaks in the date series if a break is sourrounded
           by zeros. Additionally, breaks in the date series can be accepted if
-          surrounded by NaNs. See below for mor information. This behaviour can
-          be useful for measurement series that are not continued in summer.
+          surrounded by NaNs. See below for more information. This behaviour
+          can be useful for measurement series that are not continued in summer.
         - The user can specify how to deal with missing values in a measurement
           series. There are three parameters that control NaN handling:
             - 'ignore_zeropadded_gaps'
@@ -192,9 +195,8 @@ def swe_deltasnow(
 
     Parameters
     ----------
-    data : pd.Series
-        Either a pd.Series with pd.DatetimeIndex. The data needs to be numeric
-        and not negative.
+    data : pd.Series with pd.DatetimeIndex
+        The input snow depth data. Needs to be numeric and not negative.
     rho_max : float, optional
         Maximum density of an individual snow layer produced by the DeltaSNOW
         model in [kg/m3], rho_max needs to be positive. The default is 401.2588.
@@ -254,7 +256,7 @@ def swe_deltasnow(
     Returns
     -------
     swe : pd.Series
-        Calculated SWE with 'date' column of the input data as pd.DatetimeIndex.
+        Calculated SWE with the same index as the input data.
 
     """
 

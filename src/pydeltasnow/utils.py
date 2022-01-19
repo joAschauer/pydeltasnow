@@ -1,5 +1,6 @@
 """
-This module contains utils for missing value handling and checking daterange continuity.
+This module contains utils for missing value handling and checking daterange
+continuity.
 """
 
 import pandas as pd
@@ -137,7 +138,8 @@ def get_zeropadded_gap_idxs(
     require_leading_zero,
 ):
     """
-    Get indices of Nan data-gaps in Hobs that are surrounded by zeros.
+    Get indices of Nan data-gaps in Hobs that are surrounded or followed by
+    zeros.
 
     Parameters
     ----------
@@ -218,7 +220,7 @@ def get_small_gap_idxs(
     dates : np.array of np.datetime64 dtype
         timestamps of the snow depth observations.
     max_gap_length : int
-        Only gaps shorter or equal max_gap_length are interpolated.
+        Only gaps shorter or equal max_gap_length are valid.
 
 
     Returns
