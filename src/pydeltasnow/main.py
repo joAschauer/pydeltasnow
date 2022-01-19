@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Reimplementation of the delta.snow model by Winkler et al 2021:
+Reimplementation of the DeltaSNOW model by Winkler et al 2021:
 
 Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
 exclusively from snow depths and their temporal changes: the delta.snow model,
@@ -12,9 +12,6 @@ https://bitbucket.org/atraxoo/snow_to_swe/src/master/
 This version uses numba just-in-time compilation for significant performance
 improvements.
 
-Created on Mon Nov 29 10:30:03 2021
-
-@author: Johannes Aschauer (johannes.aschauer[äääht]slf.ch)
 """
 import pandas as pd
 import numpy as np
@@ -23,7 +20,6 @@ from numba import njit
 from .core import deltasnow_snowpack_evolution
 
 from .utils import (
-    continuous_timedeltas,
     continuous_timedeltas_in_nonzero_chunks,
     fill_small_gaps,
     get_nonzero_chunk_idxs,
@@ -52,11 +48,11 @@ def _raise_nans_error_message(
 ):
     if (any([ignore_zeropadded_gaps, ignore_zerofollowed_gaps])
             and not interpolate_small_gaps):
-        raise ValueError(("swe.deltasnow: your data contains NaNs surrounded "
+        raise ValueError(("DeltaSNOW: your data contains NaNs surrounded "
                           "or followed by non-zeros."))
     elif (any([ignore_zeropadded_gaps, ignore_zerofollowed_gaps])
             and interpolate_small_gaps):
-        raise ValueError(("swe.deltasnow: your data contains gaps of NaNs "
+        raise ValueError(("DeltaSNOW: your data contains gaps of NaNs "
                           "that are either:\n"
                           "    - at the the end or beginning of your series\n"
                           f"    - longer than {max_gap_length} timesteps and "
@@ -65,14 +61,14 @@ def _raise_nans_error_message(
                           "but with breaks in the date index"))
     elif (interpolate_small_gaps 
             and not any([ignore_zeropadded_gaps, ignore_zerofollowed_gaps])):
-        raise ValueError(("swe.deltasnow: your data contains gaps of NaNs "
+        raise ValueError(("DeltaSNOW: your data contains gaps of NaNs "
                           "that are either:\n"
                           "    - at the the end or beginning of your series\n"
                           f"    - longer than {max_gap_length} timestep(s)\n"
                           f"    - shorter than {max_gap_length} timestep(s) "
                           "but with breaks in the date index"))
     else:
-        raise ValueError("swe.deltasnow: snow depth data must not be NaN.")
+        raise ValueError("DeltaSNOW: snow depth data must not be NaN.")
 
 
 @njit
@@ -104,7 +100,7 @@ def _deltasnow_on_nonzero_chunks(
     stop_idxs : np.array of int
         Last indices of windows with nonzeroes in Hobs.
     rho_max : float, optional
-        Maximum density of an individual snow layer produced by the deltasnow
+        Maximum density of an individual snow layer produced by the DeltaSNOW
         model in [kg/m3], rho_max needs to be positive. The default is 401.2588.
     rho_null : float, optional
         Fresh snow density for a newly created layer [kg/m3], rho_null needs to
@@ -169,23 +165,23 @@ def swe_deltasnow(
     output_series_name='swe_deltasnow',
 ):
     """
-    Calculate snow water equivalent (SWE) with the delta.snow model on a snow
+    Calculate snow water equivalent (SWE) with the DeltaSNOW model on a snow
     depth (HS) timeseries.
 
     Differences to the original R implementation of Winkler et al 2021:
         - Accepts a pd.DataFrame with columns 'date' and 'hs' or pd.Series with
-          pd.DatetimeIndex and HS data.
+          pd.DatetimeIndex and HS data. If a DataFrame, the date column needs
+          to be of `datetime64` dtype.
         - The time resolution (timestep in R implementation) will be automatically
           sniffed from the 'date' column or DatetimeIndex
         - The user can specify the input and output units of the HS and SWE
           measurement series, respectively.
-        - The model can accept breaks in the date series when these are small
-          or when a break is sourrounded by zeros or is followed by a zero.
-          This can be useful for measurement series that are not continued in
-          summer or which suddenly end e.g. by the end of April.
-          Accordingly, the user can specify how to deal with missing values in
-          a measurement series. There are three parameters that control NaN
-          handling:
+        - The model accepts breaks in the date series if a break is sourrounded
+          by zeros. Additionally, breaks in the date series can be accepted if
+          surrounded by NaNs. See below for mor information. This behaviour can
+          be useful for measurement series that are not continued in summer.
+        - The user can specify how to deal with missing values in a measurement
+          series. There are three parameters that control NaN handling:
             - 'ignore_zeropadded_gaps'
             - 'ignore_zerofollowed_gaps'
             - 'interpolate_small_gaps'
@@ -198,10 +194,12 @@ def swe_deltasnow(
     ----------
     data : pd.DataFrame
         Either a
-            - pd.DataFrame with columns 'hs and 'date'
+            - pd.DataFrame with columns 'hs and 'date'. The 'hs' column needs 
+              to be numeric and positive, the 'date' column needs to be of
+              `datetime64` dtype.
             - pd.Series with pd.DatetimeIndex
     rho_max : float, optional
-        Maximum density of an individual snow layer produced by the deltasnow
+        Maximum density of an individual snow layer produced by the DeltaSNOW
         model in [kg/m3], rho_max needs to be positive. The default is 401.2588.
     rho_null : float, optional
         Fresh snow density for a newly created layer [kg/m3], rho_null needs to
@@ -270,7 +268,7 @@ def swe_deltasnow(
 
     if not isinstance(data, pd.DataFrame):
         if not isinstance(data, pd.Series):
-            raise ValueError(("swe.deltasnow: data must be pd.DataFrame or"
+            raise ValueError(("DeltaSNOW: data must be pd.DataFrame or"
                               " pd.Series"))
         else:
             data = (data
@@ -282,16 +280,16 @@ def swe_deltasnow(
                     )
 
     if any([c not in data.columns for c in ['date', 'hs']]):
-        raise ValueError(("swe.deltasnow: data must be a pd.Series with "
+        raise ValueError(("DeltaSNOW: data must be a pd.Series with "
                           "pd.DatetimeIndex or a pd.Dataframe containing "
                           "at least two columns named 'hs' and 'date'"))
 
     if not pd.api.types.is_datetime64_any_dtype(data['date']):
         if isinstance(data, pd.DataFrame):
-            raise ValueError(("swe.deltasnow: date column in data needs to be "
+            raise ValueError(("DeltaSNOW: date column in data needs to be "
                               "of datetime64 dtype."))
         if isinstance(data, pd.Series):
-            raise ValueError(("swe.deltasnow: data needs pd.DatetimeIndex as "
+            raise ValueError(("DeltaSNOW: data needs pd.DatetimeIndex as "
                               "index."))
 
     data = data.sort_values(by='date')
@@ -327,13 +325,13 @@ def swe_deltasnow(
         )
 
     if not np.all(Hobs >= 0):
-        raise ValueError("swe.deltasnow: snow depth data must be positive")
+        raise ValueError("DeltaSNOW: snow depth data must be positive")
 
     if not np.all(np.isreal(Hobs)):
-        raise ValueError("swe.deltasnow: snow depth data must be numeric")
+        raise ValueError("DeltaSNOW: snow depth data must be numeric")
 
     if Hobs[0] != 0:
-        raise ValueError(("swe.deltasnow: snow depth observations must start "
+        raise ValueError(("DeltaSNOW: snow depth observations must start "
                           "with 0 or the first non nan entry \nneeds to be "
                           "zero if you ignore zeropadded or zerofollowed gaps"))
 
@@ -346,7 +344,7 @@ def swe_deltasnow(
         start_idxs,
         stop_idxs)
     if not continuous:
-        raise ValueError(("swe.deltasnow: date column must be strictly "
+        raise ValueError(("DeltaSNOW: date column must be strictly "
                           "regular within \nchunks of consecutive nonzeros"))
 
     swe_allocation = np.zeros(len(Hobs))
