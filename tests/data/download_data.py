@@ -2,11 +2,10 @@
 Download sample HS data from the sdbo database.
 
 Intended to be run once and then the data is stored in files. If you want to
-rerun this script, you need to have the 'pysdbo' package installed. Get it from
-https://gitlab.wsl.ch/joAschauer/pysdbo
+rerun this script, you need to be inside the WSL network and have the 'pysdbo'
+package installed. You can get it from https://gitlab.wsl.ch/joAschauer/pysdbo
 """
 import pandas as pd
-import numpy as np
 
 import pysdbo
 

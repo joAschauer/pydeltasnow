@@ -2,7 +2,7 @@
 Compare output of the pydeltasnow python implementation against the original
 R implementation of the 'nixmass' package.
 
-Notes on the test data and processing scheme. Since I did not want to make R
+Notes on the test data and processing scheme: Since I did not want to make R
 nor rpy2 a test dependency of this package, I decided to run the calculation
 of the R model externally and provide the output as csv file in the
 `tests/data` directory. This directory holds input HS data and SWE data

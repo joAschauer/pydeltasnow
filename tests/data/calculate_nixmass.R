@@ -1,7 +1,9 @@
 #' This script is used to calculate SWE with the nixmass R implementation.
 #'
-#' Before you run it you have to make sure the data has been downloaded and 
-#' as .csv in the same directory with 'download_data.py'.
+#' It is intended to be run once and then the resulting test data is stored in
+#´ files to be read by pytest.
+#' Before you run this script you have to make sure the data has been 
+#' downloaded and stored as .csv in the same directory with 'download_data.py'.
 
 library(nixmass)
 library(data.table)
