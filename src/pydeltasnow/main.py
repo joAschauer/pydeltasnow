@@ -257,7 +257,6 @@ def swe_deltasnow(
         Calculated SWE with 'date' column of the input data as pd.DatetimeIndex.
 
     """
-    data = data.copy()
 
     for unit in [hs_input_unit, swe_output_unit]:
         assert unit in UNIT_FACTOR.keys(), (f"swe.deltasnow: {unit} has to be "
@@ -269,9 +268,6 @@ def swe_deltasnow(
     if not isinstance(data.index, pd.DatetimeIndex):
         raise ValueError("DeltaSNOW: data needs pd.DatetimeIndex as index.")
 
-    if not data.index.is_monotonic_increasing:
-        data = data.sort_index()
-        
     Hobs = data.mul(UNIT_FACTOR[hs_input_unit]).to_numpy()
     dates = data.index.to_numpy()
 
