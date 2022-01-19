@@ -192,12 +192,9 @@ def swe_deltasnow(
 
     Parameters
     ----------
-    data : pd.DataFrame
-        Either a
-            - pd.DataFrame with columns 'hs and 'date'. The 'hs' column needs 
-              to be numeric and positive, the 'date' column needs to be of
-              `datetime64` dtype.
-            - pd.Series with pd.DatetimeIndex
+    data : pd.Series
+        Either a pd.Series with pd.DatetimeIndex. The data needs to be numeric
+        and not negative.
     rho_max : float, optional
         Maximum density of an individual snow layer produced by the DeltaSNOW
         model in [kg/m3], rho_max needs to be positive. The default is 401.2588.
@@ -266,34 +263,17 @@ def swe_deltasnow(
         assert unit in UNIT_FACTOR.keys(), (f"swe.deltasnow: {unit} has to be "
                                             "in {'mm', 'cm', 'm'}")
 
-    if not isinstance(data, pd.DataFrame):
-        if not isinstance(data, pd.Series):
-            raise ValueError(("DeltaSNOW: data must be pd.DataFrame or"
-                              " pd.Series"))
-        else:
-            data = (data
-                    .rename('hs')
-                    .reset_index(drop=False)
-                    .rename(columns={'index': 'date',
-                                        data.index.name: 'date'},
-                            errors='ignore')
-                    )
+    if not isinstance(data, pd.Series):
+        raise ValueError("DeltaSNOW: data must be pd.Series")
 
-    if any([c not in data.columns for c in ['date', 'hs']]):
-        raise ValueError(("DeltaSNOW: data must be a pd.Series with "
-                          "pd.DatetimeIndex or a pd.Dataframe containing "
-                          "at least two columns named 'hs' and 'date'"))
+    if not isinstance(data.index, pd.DatetimeIndex):
+        raise ValueError("DeltaSNOW: data needs pd.DatetimeIndex as index.")
 
-    if not pd.api.types.is_datetime64_any_dtype(data['date']):
-        if isinstance(data, pd.DataFrame):
-            raise ValueError(("DeltaSNOW: date column in data needs to be "
-                              "of datetime64 dtype."))
-        if isinstance(data, pd.Series):
-            raise ValueError(("DeltaSNOW: data needs pd.DatetimeIndex as "
-                              "index."))
-
-    data = data.sort_values(by='date')
-    Hobs = data['hs'].mul(UNIT_FACTOR[hs_input_unit]).to_numpy()
+    if not data.index.is_monotonic_increasing:
+        data = data.sort_index()
+        
+    Hobs = data.mul(UNIT_FACTOR[hs_input_unit]).to_numpy()
+    dates = data.index.to_numpy()
 
     if ignore_zeropadded_gaps or ignore_zerofollowed_gaps:
         if ignore_zerofollowed_gaps:
@@ -311,7 +291,7 @@ def swe_deltasnow(
     if np.any(np.isnan(Hobs)) and interpolate_small_gaps:
             Hobs = fill_small_gaps(
                 Hobs,
-                data['date'].to_numpy(),
+                dates,
                 max_gap_length,
                 interpolation_method)
 
@@ -340,7 +320,7 @@ def swe_deltasnow(
 
     # check for date continuity.
     continuous, resolution = continuous_timedeltas_in_nonzero_chunks(
-        data['date'].to_numpy(),
+        dates,
         start_idxs,
         stop_idxs)
     if not continuous:
@@ -371,7 +351,7 @@ def swe_deltasnow(
     # original R implementation (rewritten in ´.core´) returns SWE in ['mm']
     result = pd.Series(
         data=swe*0.001/UNIT_FACTOR[swe_output_unit],
-        index=data['date'],
+        index=data.index,
         name=output_series_name,
     )
 

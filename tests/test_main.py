@@ -43,28 +43,34 @@ def datadir(tmpdir, request):
 
 
 @pytest.fixture
-def hs_5wj_as_df(datadir):
+def hs_5wj_as_series(datadir):
     df = (pd.read_csv(datadir.join("hs_data_5WJ.csv"))
           .loc[:, ["date", "hs"]]
           .assign(date=lambda x: pd.to_datetime(x['date']))
+          .set_index('date')
+          .squeeze()
           )
     return df
 
 
 @pytest.fixture
-def hs_5df_as_df(datadir):
+def hs_5df_as_series(datadir):
     df = (pd.read_csv(datadir.join("hs_data_5DF.csv"))
           .loc[:, ["date", "hs"]]
           .assign(date=lambda x: pd.to_datetime(x['date']))
+          .set_index('date')
+          .squeeze()
           )
     return df
 
 
 @pytest.fixture
-def hs_1ad_as_df(datadir):
+def hs_1ad_as_series(datadir):
     df = (pd.read_csv(datadir.join("hs_data_1AD.csv"))
           .loc[:, ["date", "hs"]]
           .assign(date=lambda x: pd.to_datetime(x['date']))
+          .set_index('date')
+          .squeeze()
           )
     return df
 
@@ -93,9 +99,9 @@ def swe_1ad_as_series(datadir):
 @pytest.mark.parametrize(
     "input_hs_data, nixmass_swe_data",
     [
-        ("hs_5wj_as_df", "swe_5wj_as_series"),
-        ("hs_5df_as_df", "swe_5df_as_series"),
-        ("hs_1ad_as_df", "swe_1ad_as_series")
+        ("hs_5wj_as_series", "swe_5wj_as_series"),
+        ("hs_5df_as_series", "swe_5df_as_series"),
+        ("hs_1ad_as_series", "swe_1ad_as_series")
     ],
 )
 def test_swe_deltasnow_against_nixmass(
@@ -110,13 +116,11 @@ def test_swe_deltasnow_against_nixmass(
 
 
 @pytest.fixture
-def hs_5wj_with_zeropadded_gaps(hs_5wj_as_df):
-    df = hs_5wj_as_df
-    hs = df['hs'].copy()
-    hs.iloc[374:398] = np.nan
-    hs.iloc[1438:1453] = np.nan
-    df['hs'] = hs
-    return df
+def hs_5wj_with_zeropadded_gaps(hs_5wj_as_series):
+    s = hs_5wj_as_series.copy()
+    s.iloc[374:398] = np.nan
+    s.iloc[1438:1453] = np.nan
+    return s
 
 @pytest.fixture
 def swe_5wj_with_zeropadded_gaps(swe_5wj_as_series):
@@ -126,13 +130,11 @@ def swe_5wj_with_zeropadded_gaps(swe_5wj_as_series):
     return s
 
 @pytest.fixture
-def hs_5wj_with_zerofollowed_gaps(hs_5wj_as_df):
-    df = hs_5wj_as_df
-    hs = df['hs'].copy()
-    hs.iloc[373:398] = np.nan
-    hs.iloc[1079:1094] = np.nan
-    df['hs'] = hs
-    return df
+def hs_5wj_with_zerofollowed_gaps(hs_5wj_as_series):
+    s = hs_5wj_as_series.copy()
+    s.iloc[373:398] = np.nan
+    s.iloc[1079:1094] = np.nan
+    return s
 
 @pytest.fixture
 def swe_5wj_with_zerofollowed_gaps(swe_5wj_as_series):
@@ -165,10 +167,3 @@ def test_zerofollowed_gaps(
     swe_pydeltasnow = swe_deltasnow(hs_5wj_with_zerofollowed_gaps,
                                      ignore_zerofollowed_gaps=True)
     pd.testing.assert_series_equal(swe_pydeltasnow, swe_5wj_with_zerofollowed_gaps)
-
-
-def test_series_input(hs_5wj_as_df, swe_5wj_as_series):
-    hs_series = hs_5wj_as_df.set_index('date', drop=True)['hs']
-    hs_series.index = hs_series.index.rename("nonsense_index_name")
-    swe_pydeltasnow = swe_deltasnow(hs_series)
-    pd.testing.assert_series_equal(swe_pydeltasnow, swe_5wj_as_series)
