@@ -96,12 +96,19 @@ def swe_1ad_as_series(datadir):
                        index_col='date').squeeze()
 
 
+@pytest.fixture
+def all_zeros_series():
+    return pd.Series(data=np.zeros(1000),
+                     index=pd.date_range("01-01-2000",periods=1000))
+
+
 @pytest.mark.parametrize(
     "input_hs_data, nixmass_swe_data",
     [
         ("hs_5wj_as_series", "swe_5wj_as_series"),
         ("hs_5df_as_series", "swe_5df_as_series"),
-        ("hs_1ad_as_series", "swe_1ad_as_series")
+        ("hs_1ad_as_series", "swe_1ad_as_series"),
+        ("all_zeros_series", "all_zeros_series"),
     ],
 )
 def test_swe_deltasnow_against_nixmass(
@@ -112,7 +119,9 @@ def test_swe_deltasnow_against_nixmass(
     input_hs_data = request.getfixturevalue(input_hs_data)
     nixmass_swe_data = request.getfixturevalue(nixmass_swe_data)
     swe_pydeltasnow = swe_deltasnow(input_hs_data)
-    pd.testing.assert_series_equal(swe_pydeltasnow, nixmass_swe_data)
+    pd.testing.assert_series_equal(swe_pydeltasnow,
+                                   nixmass_swe_data,
+                                   check_names=False)
 
 
 @pytest.fixture

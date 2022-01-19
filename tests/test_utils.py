@@ -60,6 +60,7 @@ def test_continuous_timedeltas(
         (np.array([1,1,1,0,0]), np.array([0]), np.array([3])),
         (np.array([0,0,0,1,1,1]), np.array([2]), np.array([6])),
         (np.array([0,1,0,3,4,0,6,0,0,9,0]), np.array([0,2,5,8]), np.array([2,5,7,10])),
+        (np.zeros(10), np.array([]), np.array([])),
     ],
 )
 def test_get_nonzero_chunk_idxs(sample, start_expected, stop_expected):
