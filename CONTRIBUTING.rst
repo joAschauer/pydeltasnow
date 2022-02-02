@@ -1,128 +1,46 @@
-.. todo:: THIS IS SUPPOSED TO BE AN EXAMPLE. MODIFY IT ACCORDING TO YOUR NEEDS!
-
-   The document assumes you are using a source repository service that promotes a
-   contribution model similar to `GitHub's fork and pull request workflow`_.
-   While this is true for the majority of services (like GitHub, GitLab,
-   BitBucket), it might not be the case for private repositories (e.g., when
-   using Gerrit).
-
-   Also notice that the code examples might refer to GitHub URLs or the text
-   might use GitHub specific terminology (e.g., *Pull Request* instead of *Merge
-   Request*).
-
-   Please make sure to check the document having these assumptions in mind
-   and update things accordingly.
-
-.. todo:: Provide the correct links/replacements at the bottom of the document.
-
-.. todo:: You might want to have a look on `PyScaffold's contributor's guide`_,
-
-   especially if your project is open source. The text should be very similar to
-   this template, but there are a few extra contents that you might decide to
-   also include, like mentioning labels of your issue tracker or automated
-   releases.
-
-
 ============
 Contributing
 ============
 
-Welcome to ``pydeltasnow`` contributor's guide.
-
-This document focuses on getting any potential contributor familiarized
-with the development processes, but `other kinds of contributions`_ are also
-appreciated.
-
-If you are new to using git_ or have never collaborated in a project previously,
-please have a look at `contribution-guide.org`_. Other resources are also
-listed in the excellent `guide created by FreeCodeCamp`_ [#contrib1]_.
-
-Please notice, all users and contributors are expected to be **open,
-considerate, reasonable, and respectful**. When in doubt, `Python Software
-Foundation's Code of Conduct`_ is a good reference in terms of behavior
-guidelines.
+Welcome to ``pydeltasnow`` contributor's guide. This document focuses on
+getting you familiarized with the development processes, but
+`other kinds of contributions`_ are also appreciated.
+All users and contributors are expected to be open, inclusive,
+considerate, reasonable, and respectful.
 
 
 Issue Reports
 =============
 
-If you experience bugs or general issues with ``pydeltasnow``, please have a look
-on the `issue tracker`_. If you don't see anything useful there, please feel
-free to fire an issue report.
-
-.. tip::
-   Please don't forget to include the closed issues in your search.
-   Sometimes a solution was already reported, and the problem is considered
-   **solved**.
-
-New issue reports should include information about your programming environment
-(e.g., operating system, Python version) and steps to reproduce the problem.
-Please try also to simplify the reproduction steps to a very minimal example
-that still illustrates the problem you are facing. By removing other factors,
-you help us to identify the root cause of the issue.
+Bugs or general issues are recorded on the `issue tracker`_. Please feel
+free to place an issue report if you encounter a problem.
 
 
 Documentation Improvements
 ==========================
 
-You can help improve ``pydeltasnow`` docs by making them more readable and coherent, or
-by adding missing information and correcting mistakes.
-
-``pydeltasnow`` documentation uses Sphinx_ as its main documentation compiler.
-This means that the docs are kept in the same repository as the project code, and
-that any documentation update is done in the same way was a code contribution.
-
-.. todo:: Don't forget to mention which markup language you are using.
-
-    e.g.,  reStructuredText_ or CommonMark_ with MyST_ extensions.
-
-.. todo:: If your project is hosted on GitHub, you can also mention the following tip:
-
-   .. tip::
-      Please notice that the `GitHub web interface`_ provides a quick way of
-      propose changes in ``pydeltasnow``'s files. While this mechanism can
-      be tricky for normal code contributions, it works perfectly fine for
-      contributing to the docs, and can be quite handy.
-
-      If you are interested in trying this method out, please navigate to
-      the ``docs`` folder in the source repository_, find which file you
-      would like to propose changes and click in the little pencil icon at the
-      top, to open `GitHub's code editor`_. Once you finish editing the file,
-      please write a message in the form at the bottom of the page describing
-      which changes have you made and what are the motivations behind them and
-      submit your proposal.
+You can help improve the documentation by making it more readable and coherent,
+or by adding missing information and correcting mistakes.
 
 When working on documentation changes in your local machine, you can
 compile them using |tox|_::
 
     tox -e docs
 
-and use Python's built-in web server for a preview in your web browser
-(``http://localhost:8000``)::
-
-    python3 -m http.server --directory 'docs/_build/html'
-
 
 Code Contributions
 ==================
 
-.. todo:: Please include a reference or explanation about the internals of the project.
+The deltasnow model routines are implementetd in the :mod:`.core` module. The 
+:mod:`.utils` module holds functions for data validation and missing value
+handling. The :mod:`.main` module provides an interface to the deltaSNOW model 
+with the :func:`.swe_deltasnow` function.
 
-   An architecture description, design principles or at least a summary of the
-   main concepts will make it easy for potential contributors to get started
-   quickly.
-
-Submit an issue
----------------
-
-Before you work on any non-trivial code contribution it's best to first create
-a report in the `issue tracker`_ to start a discussion on the subject.
-This often provides additional considerations and avoids unnecessary work.
 
 Create an environment
 ---------------------
 
-Before you start coding, we recommend creating an isolated `virtual
+Before you start coding, it is recommended to create an isolated `virtual
 environment`_ to avoid any problems with your installed Python packages.
 This can easily be done via either |virtualenv|_::
 
@@ -143,23 +61,17 @@ Clone the repository
 #. Clone this copy to your local disk::
 
     git clone git@github.com:YourLogin/pydeltasnow.git
+
+#. Navigate to the folder to which git downloaded the repository::
+
     cd pydeltasnow
 
 #. You should run::
 
     pip install -U pip setuptools -e .
 
-   to be able run ``putup --help``.
-
-   .. todo:: if you are not using pre-commit, please remove the following item:
-
-#. Install |pre-commit|_::
-
-    pip install pre-commit
-    pre-commit install
-
-   ``pydeltasnow`` comes with a lot of hooks configured to automatically help the
-   developer to check the code being written.
+   in order to install ``pydeltasnow`` in editing mode and directly use your local 
+   changes.
 
 Implement your changes
 ----------------------
@@ -168,45 +80,28 @@ Implement your changes
 
     git checkout -b my-feature
 
-   and start making changes. Never work on the master branch!
+   and start making changes. Never work on the main branch.
 
-#. Start your work on this branch. Don't forget to add docstrings_ to new
-   functions, modules and classes, especially if they are part of public APIs.
+#. Start your work on this branch. Please include tests if you implement new
+   functionality and add docstrings_ to new functions, modules and classes,
+   especially if they are part of public APIs.
 
-#. Add yourself to the list of contributors in ``AUTHORS.rst``.
+#. Please check that your changes don't break any unit tests with::
 
-#. When you’re done editing, do::
+    tox
+
+   (after having installed |tox|_ with ``pip install tox``).
+
+   You can also use |tox|_ to run several other pre-configured tasks in the
+   repository. Try ``tox -av`` to see a list of the available checks.
+
+#. When you are done editing, use::
 
     git add <MODIFIED FILES>
     git commit
 
    to record your changes in git_.
 
-   .. todo:: if you are not using pre-commit, please remove the following item:
-
-   Please make sure to see the validation messages from |pre-commit|_ and fix
-   any eventual issues.
-   This should automatically use flake8_/black_ to check/fix the code style
-   in a way that is compatible with the project.
-
-   .. important:: Don't forget to add unit tests and documentation in case your
-      contribution adds an additional feature and is not just a bugfix.
-
-      Moreover, writing a `descriptive commit message`_ is highly recommended.
-      In case of doubt, you can check the commit history with::
-
-         git log --graph --decorate --pretty=oneline --abbrev-commit --all
-
-      to look for recurring communication patterns.
-
-#. Please check that your changes don't break any unit tests with::
-
-    tox
-
-   (after having installed |tox|_ with ``pip install tox`` or ``pipx``).
-
-   You can also use |tox|_ to run several other pre-configured tasks in the
-   repository. Try ``tox -av`` to see a list of the available checks.
 
 Submit your contribution
 ------------------------
@@ -217,13 +112,6 @@ Submit your contribution
 
 #. Go to the web page of your fork and click |contribute button|
    to send your changes for review.
-
-   .. todo:: if you are using GitHub, you can uncomment the following paragraph
-
-      Find more detailed information in `creating a PR`_. You might also want to open
-      the PR as a draft first and mark it as ready for review after the feedbacks
-      from the continuous integration (CI) system or any required fixes.
-
 
 Troubleshooting
 ---------------
@@ -302,25 +190,18 @@ on PyPI_, the following steps can be used to release a new version for
 
 
 
-.. [#contrib1] Even though, these resources focus on open source projects and
-   communities, the general ideas behind collaborating with other developers
-   to collectively create software are general and can be applied to all sorts
-   of environments, including private companies and proprietary code bases.
-
 
 .. <-- strart -->
-.. todo:: Please review and change the following definitions:
 
 .. |the repository service| replace:: GitHub
 .. |contribute button| replace:: "Create pull request"
 
-.. _repository: https://github.com/<USERNAME>/pydeltasnow
-.. _issue tracker: https://github.com/<USERNAME>/pydeltasnow/issues
+.. _repository: https://github.com/joAschauer/pydeltasnow
+.. _issue tracker: https://github.com/joAschauer/pydeltasnow/issues
 .. <-- end -->
 
 
 .. |virtualenv| replace:: ``virtualenv``
-.. |pre-commit| replace:: ``pre-commit``
 .. |tox| replace:: ``tox``
 
 

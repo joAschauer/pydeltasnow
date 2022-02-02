@@ -1,6 +1,6 @@
 """
-This module contains utils for missing value handling and checking daterange
-continuity.
+This module contains utility functions for missing value handling and daterange
+continuity validation.
 """
 
 import pandas as pd
@@ -22,8 +22,8 @@ def continuous_timedeltas(dr):
 
     Parameters
     ----------
-    dr : np.array with datetime64 dtype
-
+    dr : 1D :class:`numpy.ndarray` with :class:`numpy.datetime64`  dtype
+        Input date range.
     Returns
     -------
     continuous : bool
@@ -61,11 +61,11 @@ def continuous_timedeltas_in_nonzero_chunks(
 
     Parameters
     ----------
-    dr : pd.DatetimeIndex or pd.Series of datetime
-        datetime array with timestamps of snow measurements.
-    start_idxs: np.array
+    dr : 1D :class:`numpy.ndarray` with :class:`numpy.datetime64`  dtype
+        Input date range.
+    start_idxs: 1D :class:`numpy.ndarray`
         Indices where a nonzero chunk begins.
-    stop_idxs: np.array
+    stop_idxs: 1D :class:`numpy.ndarray`
         Indices where a nonzero chunk ends.
 
     Returns
@@ -98,16 +98,19 @@ def get_nonzero_chunk_idxs(Hobs):
     are when Hobs does not start and/or end with zero (then the first start
     and/or last stop index is not pointing to a zero).
 
+    Note that when you slice `Hobs` with `Hobs[start:stop]` the stop value is 
+    non-inclusive (https://stackoverflow.com/a/509295).
+
     Parameters
     ----------
-    Hobs : 1D np.array of floats
+    Hobs : 1D :class:`numpy.ndarray` of floats
         input HS data
 
     Returns
     -------
-    start_idxs: np.array
+    start_idxs: 1D :class:`numpy.ndarray`
         Indices where a nonzero chunk begins.
-    stop_idxs: np.array
+    stop_idxs: 1D :class:`numpy.ndarray`
         Indices where a nonzero chunk ends.
     """
 
@@ -143,7 +146,7 @@ def get_zeropadded_gap_idxs(
 
     Parameters
     ----------
-    Hobs : 1D np.array of floats
+    Hobs : 1D :class:`numpy.ndarray` of floats
         input HS data
 
     require_leading_zero : bool
@@ -152,7 +155,7 @@ def get_zeropadded_gap_idxs(
 
     Returns
     -------
-    zeropadded_gap_idxs : np.array of bools
+    zeropadded_gap_idxs : 1D :class:`numpy.ndarray` of bools
     """
     zeropadded_gap_idxs = np.zeros(len(Hobs), dtype='bool')
 
@@ -215,9 +218,9 @@ def get_small_gap_idxs(
 
     Parameters
     ----------
-    Hobs : 1D np.array of floats
+    Hobs : 1D :class:`numpy.ndarray` of floats
         input HS data
-    dates : np.array of np.datetime64 dtype
+    dates : 1D :class:`numpy.ndarray` of :class:`numpy.datetime64`  dtype
         timestamps of the snow depth observations.
     max_gap_length : int
         Only gaps shorter or equal max_gap_length are valid.
@@ -225,7 +228,7 @@ def get_small_gap_idxs(
 
     Returns
     -------
-    small_gap_idxs : np.array of bools
+    small_gap_idxs : 1D :class:`numpy.ndarray` of bools
 
     """
     small_gap_idxs = np.zeros(len(Hobs), dtype='bool')
@@ -284,19 +287,19 @@ def fill_small_gaps(
 
     Parameters
     ----------
-    Hobs : np.array
+    Hobs : 1D :class:`numpy.ndarray`
         Snow depth data.
-    dates : np.array of np.datetime64 dtype
+    dates : 1D :class:`numpy.ndarray` of :class:`numpy.datetime64`  dtype
         timestamps of the snow depth observations.
     max_gap_length : int
         Only gaps shorter or equal max_gap_length are interpolated.
     method : str, optional
-        Interpolation method which will be passed to `pd.Series.interpolate`.
-        The default is 'linear'.
+        Interpolation method which will be passed to 
+        :func:`pandas.Series.interpolate`. The default is 'linear'.
 
     Returns
     -------
-    Hobs_intepolated : np.array
+    Hobs_intepolated : 1D :class:`numpy.ndarray` 
         Snow depth data with filled gaps.
 
     """

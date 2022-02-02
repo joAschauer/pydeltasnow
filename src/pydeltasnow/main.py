@@ -1,19 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Main module for the reimplementation of the DeltaSNOW model.
-
-Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
-exclusively from snow depths and their temporal changes: the DeltaSNOW model,
-Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021.
-
-The original implementation is included in the `nixmass` R package:
-https://CRAN.R-project.org/package=nixmass
-
-The core of this code is mainly based on the work of Manuel Theurl:
-https://github.com/manueltheurl/snow_to_swe
-
-This module provides the API for for this implementation with the 
-`func:swe_delatsnow` function.
+This module provides the main user interface to the deltaSNOW model with the
+:func:`swe_delatsnow` function.
 
 """
 import pandas as pd
@@ -94,32 +82,33 @@ def _deltasnow_on_nonzero_chunks(
 
     Parameters
     ----------
-    Hobs : 1D np.array of floats
-        Measured snow height. Needs to be in [m].
-    swe_out : 1D np.array of floats
-        preallocated swe array where the output is stored to. Same shape as Hobs.
-    start_idxs : np.array of int
-        Start indices of windows with nonzeros in Hobs.
-    stop_idxs : np.array of int
-        Last indices of windows with nonzeroes in Hobs.
+    Hobs : 1D :class:`numpy.ndarray` of floats
+        Measured snow depth. Needs to be in [m].
+    swe_out : 1D :class:`numpy.ndarray` of floats
+        preallocated swe array where the output is stored to. Same shape as
+        `Hobs`.
+    start_idxs : :class:`numpy.ndarray` of int
+        Start indices of windows with nonzeros in `Hobs`.
+    stop_idxs : :class:`numpy.ndarray` of int
+        Last indices of windows with nonzeros in `Hobs`.
     rho_max : float, optional
         Maximum density of an individual snow layer produced by the DeltaSNOW
         model in [kg/m3], rho_max needs to be positive. The default is 401.2588.
     rho_null : float, optional
-        Fresh snow density for a newly created layer [kg/m3], rho_null needs to
+        Fresh snow density for a newly created layer [kg/m3], `rho_null` needs to
         be positive. The default is 81.19417.
     c_ov : float, optional
-        Overburden factor due to fresh snow [-], c_ov needs to be positive. The
+        Overburden factor due to fresh snow [-], `c_ov` needs to be positive. The
         default is 0.0005104722.
     k_ov : float, optional
         Defines the impact of the individual layer density on the compaction due
-        to overburden [-], k_ov need to be in the range [0,1].
+        to overburden [-], `k_ov` need to be in the range [0,1].
         The default is 0.37856737.
     k : float, optional
-        Exponent of the exponential-law compaction [m3/kg], k needs to be
+        Exponent of the exponential-law compaction [m3/kg], `k` needs to be
         positive. The default is 0.02993175.
     tau : float, optional
-        Uncertainty bound [m], tau needs to be positive.
+        Uncertainty bound [m], `tau` needs to be positive.
         The default is 0.02362476.
     eta_null : float, optional
         Effective compactive viscosity of snow for "zero-density" [Pa s].
@@ -129,7 +118,7 @@ def _deltasnow_on_nonzero_chunks(
 
     Returns
     -------
-    swe_out : np.array
+    swe_out : 1D :class:`numpy.ndarray`
 
     """
 
@@ -173,10 +162,11 @@ def swe_deltasnow(
 
     Differences to the original R implementation within the `nixmass` package
     of Winkler et al 2021:
-        - Accepts as input data only a pd.Series with pd.DatetimeIndex and no
-          dataframe.
-        - The time resolution (timestep in R implementation) will be automatically
-          sniffed from the 'date' column or DatetimeIndex
+        - Accepts as input data only a :class:`pandas.Series` with 
+          :class:`pandas.DatetimeIndex` and no dataframe.
+        - The time resolution (timestep in R implementation) will be 
+          automatically sniffed from the :class:`pandas.DatetimeIndex` of the 
+          input series.
         - The user can specify the input and output units of the HS and SWE
           measurement series, respectively.
         - The model accepts breaks in the date series if a break is sourrounded
@@ -185,44 +175,45 @@ def swe_deltasnow(
           can be useful for measurement series that are not continued in summer.
         - The user can specify how to deal with missing values in a measurement
           series. There are three parameters that control NaN handling:
-            - 'ignore_zeropadded_gaps'
-            - 'ignore_zerofollowed_gaps'
-            - 'interpolate_small_gaps'
+            - `ignore_zeropadded_gaps`
+            - `ignore_zerofollowed_gaps`
+            - `interpolate_small_gaps`
           Note that the runtime efficiency of the model will decrease when one
           or several of these options are turnded on.
-        - A pd.Series with the dates as pd.DatetimeIndex is returned.
+        - A :class:`pandas.Series` with the dates as pd.DatetimeIndex is
+          returned.
 
 
     Parameters
     ----------
-    data : pd.Series with pd.DatetimeIndex
+    data : :class:`pandas.Series` with :class:`pandas.DatetimeIndex`
         The input snow depth data. Needs to be numeric and not negative.
     rho_max : float, optional
         Maximum density of an individual snow layer produced by the DeltaSNOW
-        model in [kg/m3], rho_max needs to be positive. The default is 401.2588.
+        model in [kg/m3], `rho_max` needs to be positive. The default is 401.2588.
     rho_null : float, optional
-        Fresh snow density for a newly created layer [kg/m3], rho_null needs to
+        Fresh snow density for a newly created layer [kg/m3], `rho_null` needs to
         be positive. The default is 81.19417.
     c_ov : float, optional
-        Overburden factor due to fresh snow [-], c_ov needs to be positive. The
+        Overburden factor due to fresh snow [-], `c_ov` needs to be positive. The
         default is 0.0005104722.
     k_ov : float, optional
         Defines the impact of the individual layer density on the compaction due
-        to overburden [-], k_ov need to be in the range [0,1].
+        to overburden [-], `k_ov` needs to be in the range [0,1].
         The default is 0.37856737.
     k : float, optional
-        Exponent of the exponential-law compaction [m3/kg], k needs to be
+        Exponent of the exponential-law compaction [m3/kg], `k` needs to be
         positive. The default is 0.02993175.
     tau : float, optional
-        Uncertainty bound [m], tau needs to be positive.
+        Uncertainty bound [m], `tau` needs to be positive.
         The default is 0.02362476.
     eta_null : float, optional
         Effective compactive viscosity of snow for "zero-density" [Pa s].
         The default is 8523356.
-    hs_input_unit : str in {'mm', 'cm', 'm'}
-        The unit of the input snow depth. The default is 'm'.
-    swe_output_unit : str in {'mm', 'cm', 'm'}
-        The unit of the output snow water equivalent. The default is 'mm'.
+    hs_input_unit : str in {"mm", "cm", "m"}
+        The unit of the input snow depth. The default is "m".
+    swe_output_unit : str in {"mm", "cm", "m"}
+        The unit of the output snow water equivalent. The default is "mm".
     ignore_zeropadded_gaps : bool
         Whether to ignore gaps that have leading and trailing zeros. The
         resulting SWE series will contain NaNs at the same positions. These
@@ -241,12 +232,12 @@ def swe_deltasnow(
         `interpolate_small_gaps` is True.
     interpolation_method : str
         Interpolation method for the small gaps which is passed to
-        pandas.Series.interpolate(). See the documentation for valid options.
-        The default is 'linear'.
+        :func:`pandas.Series.interpolate`. See its documentation for valid
+        options. The default is 'linear'.
     output_series_name : str
         The name of the resulting pd.Series. This can be useful if you want to
         add the resulting SWE series to an existing DataFrame and need a
-        specific column name. The default is 'swe_deltasnow'.
+        specific column name. The default is "swe_deltasnow".
 
     Raises
     ------

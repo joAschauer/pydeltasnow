@@ -1,67 +1,97 @@
 .. These are examples of badges you might want to add to your README:
    please update the URLs accordingly
 
-    .. image:: https://api.cirrus-ci.com/github/<USER>/pydeltasnow.svg?branch=main
-        :alt: Built Status
-        :target: https://cirrus-ci.com/github/<USER>/pydeltasnow
-    .. image:: https://readthedocs.org/projects/pydeltasnow/badge/?version=latest
-        :alt: ReadTheDocs
-        :target: https://pydeltasnow.readthedocs.io/en/stable/
-    .. image:: https://img.shields.io/coveralls/github/<USER>/pydeltasnow/main.svg
-        :alt: Coveralls
-        :target: https://coveralls.io/r/<USER>/pydeltasnow
-    .. image:: https://img.shields.io/pypi/v/pydeltasnow.svg
-        :alt: PyPI-Server
-        :target: https://pypi.org/project/pydeltasnow/
-    .. image:: https://img.shields.io/conda/vn/conda-forge/pydeltasnow.svg
-        :alt: Conda-Forge
-        :target: https://anaconda.org/conda-forge/pydeltasnow
-    .. image:: https://pepy.tech/badge/pydeltasnow/month
-        :alt: Monthly Downloads
-        :target: https://pepy.tech/project/pydeltasnow
-    .. image:: https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Twitter
-        :alt: Twitter
-        :target: https://twitter.com/pydeltasnow
+.. image:: https://readthedocs.org/projects/pydeltasnow/badge/?version=latest
+    :alt: ReadTheDocs
+    :target: https://pydeltasnow.readthedocs.io/en/stable/
+.. image:: https://img.shields.io/pypi/v/pydeltasnow.svg
+    :alt: PyPI-Server
+    :target: https://pypi.org/project/pydeltasnow/
 
-.. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
-    :alt: Project generated with PyScaffold
-    :target: https://pyscaffold.org/
-
-|
 
 ===========
 pydeltasnow
 ===========
 
 
-    Reimplementation of the delta.snow model by Winkler et al. 2021: Snow water equivalents exclusively from snow depths and their temporal changes.
+Reimplementation of the deltaSNOW model by Winkler et al. 2021:
+
+Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
+exclusively from snow depths and their temporal changes: the DeltaSNOW model,
+Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021.
+
+The original implementation is included within the ``nixmass`` R package:
+https://CRAN.R-project.org/package=nixmass
+
+The core of this code is mainly based on the work of Manuel Theurl:
+https://github.com/manueltheurl/snow_to_swe
+
+This version makes use of the numba_ just-in-time compiler for performance
+optimization.
+
+Differences to the original R implementation within the nixmass_ package
+of Winkler et al 2021:
+
+* Accepts as input data only a pd.Series with pd.DatetimeIndex and no
+  dataframe.
+* The time resolution (timestep in R implementation) will be automatically
+  sniffed from the DatetimeIndex of the input series.
+* The user can specify the input and output units of the HS and SWE
+  measurement series, respectively.
+* The model accepts breaks in the date series if a break is sourrounded
+  by zeros. Additionally, breaks in the date series can be accepted if
+  surrounded by NaNs. See below for more information. This behaviour
+  can be useful for measurement series that are not continued in summer.
+* The user can specify how to deal with missing values in a measurement
+  series. There are three parameters that control NaN handling:
+
+  * ``ignore_zeropadded_gaps``
+  * ``ignore_zerofollowed_gaps``
+  * ``interpolate_small_gaps``
+
+  Note that the runtime efficiency of the model will decrease when one
+  or several of these options are turnded on.
+* A pd.Series with the dates as pd.DatetimeIndex is returned.
 
 
-A longer description of your project goes here...
+Dependencies
+============
+
+``pydeltasnow`` depends on the following packages:
+
+* pandas_: >=1.3
+* numpy_: <1.21, >=1.17
+* numba_: >=0.53.1
+
+.. _installation:
+
+Installation
+============
+Install ``pydeltasnow`` and its dependencies by runnig::
+
+    pip install pydeltasnow
 
 
-.. _pyscaffold-notes:
+Usage
+=====
 
-Making Changes & Contributing
-=============================
+The deltaSNOW model can be used as following::
 
-This project uses `pre-commit`_, please make sure to install it before making any
-changes::
+    import pandas as pd
+    from pydeltasnow import swe_deltasnow
 
-    pip install pre-commit
-    cd pydeltasnow
-    pre-commit install
+    hs_data = pd.read_csv("path/to/some/data.csv",
+                          parse_dates=['date'],
+                          index_col='date').squeeze()
+    
+    swe_data = swe_deltasnow(hs_data)
 
-It is a good idea to update the hooks to the latest version::
+For more information on how to use the package, the reader is referred to the
+documentation_ of this project.
 
-    pre-commit autoupdate
 
-Don't forget to tell your contributors to also install and use pre-commit.
-
-.. _pre-commit: https://pre-commit.com/
-
-Note
-====
-
-This project has been set up using PyScaffold 4.1.1. For details and usage
-information on PyScaffold see https://pyscaffold.org/.
+.. _documentation: https://pydeltasnow.readthedocs.io/en/stable/
+.. _numba: https://numba.pydata.org/
+.. _numpy: https://numpy.org/
+.. _nixmass: https://CRAN.R-project.org/package=nixmass
+.. _pandas: https://pandas.pydata.org/

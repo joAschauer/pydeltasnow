@@ -1,15 +1,12 @@
 """
-Core of the DeltaSNOW model by Winkler et al 2021:
+Core of the DeltaSNOW model. This module provides the public function 
+:func:`deltasnow_snowpack_evolution` which implements the algorithm of the
+deltaSNOW model with numba but does not validate input data. Users are
+discouraged to use this function and should rather use the 
+:func:`pydeltasnow.main.swe_deltasnow` function instead.
 
-Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
-exclusively from snow depths and their temporal changes: the DeltaSNOW model,
-Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021.
-
-The original implementation is included in the `nixmass` R package:
-https://CRAN.R-project.org/package=nixmass
-
-This code is mainly based on the work of Manuel Theurl:
-https://github.com/manueltheurl/snow_to_swe
+Significant parts of the code in this module are based on the work of Manuel 
+Theurl: https://github.com/manueltheurl/snow_to_swe
 
 """
 import numpy as np
@@ -347,7 +344,7 @@ def deltasnow_snowpack_evolution(
 
     Parameters
     ----------
-    Hobs : 1D np.array of floats 
+    Hobs : 1D :class:`numpy.ndarray` of floats 
         Measured snow height. Needs to be in [m].
         Must comply to the following constraints:
             - no nans
@@ -384,7 +381,7 @@ def deltasnow_snowpack_evolution(
 
     Returns
     -------
-    SWE : np.array of floats
+    SWE : 1D :class:`numpy.ndarray` of floats
         Calculated SWE in [mm]. Same shape as Hobs.
 
     """
