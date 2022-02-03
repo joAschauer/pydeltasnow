@@ -22,7 +22,7 @@ order by DATUM1D
           .rename(columns={'datum1d':'date', 'stat_abk':'station'})
           .assign(date=lambda x: pd.to_datetime(x['date']))
           .assign(hjahr=lambda x: x.date.dt.year.where(x.date.dt.month<8, x.date.dt.year+1))
-          .assign(hs=lambda x: x['hs']/100)
+          .assign(hs=lambda x: x['hs']/100)  # convert to [m]
           )
 
     df = (df

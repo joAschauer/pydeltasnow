@@ -44,6 +44,7 @@ def datadir(tmpdir, request):
 
 @pytest.fixture
 def hs_5wj_as_series(datadir):
+    # HS in [m]
     df = (pd.read_csv(datadir.join("hs_data_5WJ.csv"))
           .loc[:, ["date", "hs"]]
           .assign(date=lambda x: pd.to_datetime(x['date']))
@@ -55,6 +56,7 @@ def hs_5wj_as_series(datadir):
 
 @pytest.fixture
 def hs_5df_as_series(datadir):
+    # HS in [m]
     df = (pd.read_csv(datadir.join("hs_data_5DF.csv"))
           .loc[:, ["date", "hs"]]
           .assign(date=lambda x: pd.to_datetime(x['date']))
@@ -66,6 +68,7 @@ def hs_5df_as_series(datadir):
 
 @pytest.fixture
 def hs_1ad_as_series(datadir):
+    # HS in [m]
     df = (pd.read_csv(datadir.join("hs_data_1AD.csv"))
           .loc[:, ["date", "hs"]]
           .assign(date=lambda x: pd.to_datetime(x['date']))
@@ -77,6 +80,7 @@ def hs_1ad_as_series(datadir):
 
 @pytest.fixture
 def swe_5wj_as_series(datadir):
+    # SWE in [mm]
     return pd.read_csv(datadir.join("swe_data_5WJ.csv"),
                        parse_dates=['date'],
                        index_col='date').squeeze()
@@ -84,6 +88,7 @@ def swe_5wj_as_series(datadir):
 
 @pytest.fixture
 def swe_5df_as_series(datadir):
+    # SWE in [mm]
     return pd.read_csv(datadir.join("swe_data_5DF.csv"),
                        parse_dates=['date'],
                        index_col='date').squeeze()
@@ -91,6 +96,7 @@ def swe_5df_as_series(datadir):
 
 @pytest.fixture
 def swe_1ad_as_series(datadir):
+    # SWE in [mm]
     return pd.read_csv(datadir.join("swe_data_1AD.csv"),
                        parse_dates=['date'],
                        index_col='date').squeeze()
@@ -176,3 +182,65 @@ def test_zerofollowed_gaps(
     swe_pydeltasnow = swe_deltasnow(hs_5wj_with_zerofollowed_gaps,
                                      ignore_zerofollowed_gaps=True)
     pd.testing.assert_series_equal(swe_pydeltasnow, swe_5wj_with_zerofollowed_gaps)
+
+
+@pytest.fixture
+def hs_5wj_in_m(hs_5wj_as_series):
+    return hs_5wj_as_series
+
+
+@pytest.fixture
+def hs_5wj_in_cm(hs_5wj_as_series):
+    return hs_5wj_as_series * 100
+
+
+@pytest.fixture
+def hs_5wj_in_mm(hs_5wj_as_series):
+    return hs_5wj_as_series * 1000
+
+
+@pytest.fixture
+def swe_5wj_in_m(swe_5wj_as_series):
+    return swe_5wj_as_series / 1000
+
+
+@pytest.fixture
+def swe_5wj_in_cm(swe_5wj_as_series):
+    return swe_5wj_as_series / 10
+
+
+@pytest.fixture
+def swe_5wj_in_mm(swe_5wj_as_series):
+    return swe_5wj_as_series
+
+
+@pytest.mark.parametrize(
+    "hs_data, swe_data, hs_unit, swe_unit",
+    [
+        ("hs_5wj_in_m", "swe_5wj_in_m", "m", "m"),
+        ("hs_5wj_in_cm", "swe_5wj_in_m", "cm", "m"),
+        ("hs_5wj_in_mm", "swe_5wj_in_m", "mm", "m"),
+        ("hs_5wj_in_m", "swe_5wj_in_cm", "m", "cm"),
+        ("hs_5wj_in_cm", "swe_5wj_in_cm", "cm", "cm"),
+        ("hs_5wj_in_mm", "swe_5wj_in_cm", "mm", "cm"),
+        ("hs_5wj_in_m", "swe_5wj_in_mm", "m", "mm"),
+        ("hs_5wj_in_cm", "swe_5wj_in_mm", "cm", "mm"),
+        ("hs_5wj_in_mm", "swe_5wj_in_mm", "mm", "mm"),
+    ],
+)
+def test_unit_conversion(
+    hs_data,
+    swe_data,
+    hs_unit,
+    swe_unit,
+    request
+):
+    hs_data = request.getfixturevalue(hs_data)
+    swe_data = request.getfixturevalue(swe_data)
+    swe_pydeltasnow = swe_deltasnow(
+        hs_data,
+        hs_input_unit=hs_unit,
+        swe_output_unit=swe_unit)
+    pd.testing.assert_series_equal(swe_pydeltasnow,
+                                   swe_data,
+                                   check_names=False)
