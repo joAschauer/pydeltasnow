@@ -157,32 +157,8 @@ def swe_deltasnow(
     output_series_name='swe_deltasnow',
 ):
     """
-    Calculate snow water equivalent (SWE) with the DeltaSNOW model on a snow
-    depth (HS) timeseries.
-
-    Differences to the original R implementation within the `nixmass` package
-    of Winkler et al 2021:
-        - Accepts as input data only a :class:`pandas.Series` with 
-          :class:`pandas.DatetimeIndex` and no dataframe.
-        - The time resolution (timestep in R implementation) will be 
-          automatically sniffed from the :class:`pandas.DatetimeIndex` of the 
-          input series.
-        - The user can specify the input and output units of the HS and SWE
-          measurement series, respectively.
-        - The model accepts breaks in the date series if a break is sourrounded
-          by zeros. Additionally, breaks in the date series can be accepted if
-          surrounded by NaNs. See below for more information. This behaviour
-          can be useful for measurement series that are not continued in summer.
-        - The user can specify how to deal with missing values in a measurement
-          series. There are three parameters that control NaN handling:
-            - `ignore_zeropadded_gaps`
-            - `ignore_zerofollowed_gaps`
-            - `interpolate_small_gaps`
-          Note that the runtime efficiency of the model will decrease when one
-          or several of these options are turnded on.
-        - A :class:`pandas.Series` with the dates as pd.DatetimeIndex is
-          returned.
-
+    Calculate snow water equivalent from a snow depth timeseries with the
+    DeltaSNOW model.
 
     Parameters
     ----------
@@ -246,8 +222,34 @@ def swe_deltasnow(
 
     Returns
     -------
-    swe : pd.Series
+    swe : :class:`pandas.Series`
         Calculated SWE with the same index as the input data.
+    
+    Notes
+    -----
+    Differences to the original R implementation within the ``nixmass`` package
+    of Winkler et al. 2021:
+
+        - The model accepts breaks in the date series if a break is sourrounded
+          by zeros. Additionally, breaks in the date series can be accepted if
+          surrounded by NaNs. See below for more information. This behaviour
+          can be useful for measurement series that are not continued in summer.
+        - The user can specify how to deal with missing values in a measurement
+          series. There are three parameters that control NaN handling:
+            - ``ignore_zeropadded_gaps``
+            - ``ignore_zerofollowed_gaps``
+            - ``interpolate_small_gaps``
+          Note that the runtime efficiency of the model will decrease when one
+          or several of these options are turnded on.
+        - Accepts as input data only a :class:`pandas.Series` with 
+          :class:`pandas.DatetimeIndex` and no dataframe.
+        - The time resolution (timestep in R implementation) will be 
+          automatically sniffed from the :class:`pandas.DatetimeIndex` of the 
+          input series.
+        - The user can specify the input and output units of the HS and SWE
+          measurement series, respectively.
+        - A :class:`pandas.Series` with the dates as pd.DatetimeIndex is
+          returned.
 
     """
 

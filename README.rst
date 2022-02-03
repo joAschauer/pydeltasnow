@@ -48,10 +48,8 @@ version are the following:
 
 
 The core of this code is mainly based `on the work of Manuel Theurl
-<https://github.com/manueltheurl/snow_to_swe>`_
-
-This version makes use of the numba_ just-in-time compiler for performance
-optimization.
+<https://github.com/manueltheurl/snow_to_swe>`_, this version makes use of the
+numba_ just-in-time compiler for performance optimization.
 
 
 Dependencies
@@ -75,18 +73,7 @@ Install ``pydeltasnow`` and its dependencies by runnig::
 Usage
 =====
 
-The deltaSNOW model can be used as following::
-
-    import pandas as pd
-    from pydeltasnow import swe_deltasnow
-
-    hs_data = pd.read_csv("path/to/some/data.csv",
-                          parse_dates=['date'],
-                          index_col='date').squeeze()
-    
-    swe_data = swe_deltasnow(hs_data)
-
-For more information on how to use the package, the reader is referred to the
+For examples on how to use the package, please have a look at the
 documentation_ of this project.
 
 
