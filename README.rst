@@ -14,30 +14,17 @@ pydeltasnow
 ===========
 
 
-Reimplementation of the deltaSNOW model by Winkler et al. 2021:
+Python implementation of the deltaSNOW model by Winkler et al. 2021:
 
 Winkler, M., Schellander, H., and Gruber, S.: Snow water equivalents
 exclusively from snow depths and their temporal changes: the DeltaSNOW model,
-Hydrol. Earth Syst. Sci., 25, 1165-1187, doi: 10.5194/hess-25-1165-2021, 2021.
+Hydrol. Earth Syst. Sci., 25, 1165-1187, 
+`10.5194/hess-25-1165-2021 <https://doi.org/10.5194/hess-25-1165-2021>`_, 2021.
 
-The original implementation is included within the ``nixmass`` R package:
-https://CRAN.R-project.org/package=nixmass
+The original implementation is included within the nixmass_ R package
+of Winkler et al 2021. Differences of this version to the original R 
+version are the following:
 
-The core of this code is mainly based on the work of Manuel Theurl:
-https://github.com/manueltheurl/snow_to_swe
-
-This version makes use of the numba_ just-in-time compiler for performance
-optimization.
-
-Differences to the original R implementation within the nixmass_ package
-of Winkler et al 2021:
-
-* Accepts as input data only a pd.Series with pd.DatetimeIndex and no
-  dataframe.
-* The time resolution (timestep in R implementation) will be automatically
-  sniffed from the DatetimeIndex of the input series.
-* The user can specify the input and output units of the HS and SWE
-  measurement series, respectively.
 * The model accepts breaks in the date series if a break is sourrounded
   by zeros. Additionally, breaks in the date series can be accepted if
   surrounded by NaNs. See below for more information. This behaviour
@@ -51,7 +38,20 @@ of Winkler et al 2021:
 
   Note that the runtime efficiency of the model will decrease when one
   or several of these options are turnded on.
+* Accepts as input data only a pd.Series with pd.DatetimeIndex and no
+  dataframe.
+* The time resolution (timestep in R implementation) will be automatically
+  sniffed from the DatetimeIndex of the input series.
+* The user can specify the input and output units of the HS and SWE
+  measurement series, respectively.
 * A pd.Series with the dates as pd.DatetimeIndex is returned.
+
+
+The core of this code is mainly based `on the work of Manuel Theurl
+<https://github.com/manueltheurl/snow_to_swe>`_
+
+This version makes use of the numba_ just-in-time compiler for performance
+optimization.
 
 
 Dependencies
