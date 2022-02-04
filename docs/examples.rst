@@ -6,7 +6,7 @@ This section shows briefly how to use the ``pydeltasnow`` package. Before you ca
 start, please install the package as described in the :ref:`installation` section.
 
 After installing you can import the model alongside with pandas, which is 
-necessary since we rely on its data formats for input data::
+necessary since ``pydeltasnow`` relies on pandas objects as input data::
 
     from pydeltasnow import swe_deltasnow
     import pandas as pd
@@ -18,7 +18,7 @@ DeltaSNOW model via::
                           parse_dates=['date'],
                           index_col='date').squeeze()
 
-    swe = pydeltasnow.swe_deltasnow(hs_series)
+    swe = swe_deltasnow(hs_series)
 
 where ``hs_data`` is a :class:`pandas.Series` with the snow depth (HS) data and
 a :class:`pandas.DatetimeIndex`. The variable ``swe`` will also be a
