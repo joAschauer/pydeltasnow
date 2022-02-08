@@ -7,7 +7,7 @@
 .. image:: https://img.shields.io/pypi/v/pydeltasnow.svg
     :alt: PyPI-Server
     :target: https://pypi.org/project/pydeltasnow/
-.. image:: https://img.shields.io/github/workflow/status/joAschauer/pydeltasnow/tests.yml?label=tests
+.. image:: https://github.com/joAschauer/pydeltasnow/actions/workflows/tests.yml/badge.svg
     :alt: GitHub Workflow Status
     :target: https://github.com/joAschauer/pydeltasnow/actions/workflows/tests.yml
 
