@@ -154,6 +154,10 @@ package:
     .venv/bin/pip install tox
     .venv/bin/tox -e all
 
+#. Right now, tox is set up with anaconda. In case you encounter problems with
+   the environment creation, you might need to change the envlist parameters in
+   ``tox.ini`` from ``pythonX.X`` to ``pyXX``.
+
 #. `Pytest can drop you`_ in an interactive session in the case an error occurs.
    In order to do that you need to pass a ``--pdb`` option (for example by
    running ``tox -- -k <NAME OF THE FALLING TEST> --pdb``).

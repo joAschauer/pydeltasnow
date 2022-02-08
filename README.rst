@@ -7,6 +7,9 @@
 .. image:: https://img.shields.io/pypi/v/pydeltasnow.svg
     :alt: PyPI-Server
     :target: https://pypi.org/project/pydeltasnow/
+.. image:: https://img.shields.io/github/workflow/status/joAschauer/pydeltasnow/run_tests?label=tests
+    :alt: GitHub Workflow Status
+    :target: https://github.com/joAschauer/pydeltasnow/actions/workflows/run_tests.yml
 
 
 ===========
