@@ -170,27 +170,19 @@ Maintainer tasks
 Releases
 --------
 
-.. todo:: This section assumes you are using PyPI to publicly release your package.
 
-   If instead you are using a different/private package index, please update
-   the instructions accordingly.
+If you have write access to the repository_, the following steps can be used
+to release a new version for ``pydeltasnow``:
 
-If you are part of the group of maintainers and have correct user permissions
-on PyPI_, the following steps can be used to release a new version for
-``pydeltasnow``:
-
-#. Make sure all unit tests are successful.
+#. Make sure all unit tests are successful locally and there ar no CI failures.
 #. Tag the current commit on the main branch with a release tag, e.g., ``v1.2.3``.
 #. Push the new tag to the upstream repository_, e.g., ``git push upstream v1.2.3``
-#. Clean up the ``dist`` and ``build`` folders with ``tox -e clean``
-   (or ``rm -rf dist build``)
-   to avoid confusion with old builds and Sphinx docs.
-#. Run ``tox -e build`` and check that the files in ``dist`` have
-   the correct version (no ``.dirty`` or git_ hash) according to the git_ tag.
-   Also check the sizes of the distributions, if they are too big (e.g., >
-   500KB), unwanted clutter may have been accidentally included.
-#. Run ``tox -e publish -- --repository pypi`` and check that everything was
-   uploaded to PyPI_ correctly.
+   The CI will then publish to TestPyPi and you can have a look if everythin is
+   okay.
+#. Create a release on |the repository service| and assiciate it with the tag 
+   you just created. 
+#. Publish the release on |the repository service|. This will trigger a CI job 
+   that builds the package and publishes it to PyPi.
 
 
 
