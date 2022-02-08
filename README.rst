@@ -10,6 +10,8 @@
 .. image:: https://github.com/joAschauer/pydeltasnow/actions/workflows/tests.yml/badge.svg
     :alt: GitHub Workflow Status
     :target: https://github.com/joAschauer/pydeltasnow/actions/workflows/tests.yml
+.. image:: https://img.shields.io/pypi/pyversions/pydeltasnow
+    :alt: PyPI - Python Version
 
 
 ===========
@@ -58,7 +60,8 @@ numba_ just-in-time compiler for performance optimization.
 Dependencies
 ============
 
-``pydeltasnow`` depends on the following packages:
+The package is tested on python versions 3.7, 3.8 and 3.9. Higher python versions 
+might work too but are not tested. ``pydeltasnow`` depends on the following packages:
 
 * pandas_: >=1.3
 * numpy_: <1.21, >=1.17
