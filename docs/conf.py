@@ -145,6 +145,12 @@ html_theme_options = {
     "show_nav_level": 2,
     "show_prev_next": False,
     "use_edit_page_button": True,
+    "navbar_end": ["version-switcher"],
+    "switcher": {
+        "json_url": "https://pydeltasnow.readthedocs.io/en/latest/_static/switcher.json",
+        "url_template": "https://pydeltasnow.readthedocs.io/en/v{version}/",
+        "version_match": version,
+    },
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
