@@ -50,7 +50,7 @@ Please read the paper on how the parameters influence the behaviour of the
 model and what potential pitfalls are.
 
 If your input data contains gaps that are irrelavant for you (i.e gaps that are
-surrounded or followed by gaps), you can ignore these gaps::
+surrounded or followed by zeros), you can ignore these gaps::
     
     swe = swe_deltasnow(hs_series,
                         ignore_zerofollowed_gaps=True)
